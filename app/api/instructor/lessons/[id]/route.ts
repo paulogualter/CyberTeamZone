@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { supabaseAdmin } from '@/lib/supabase'
 
 // PUT - Atualizar aula
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
@@ -13,52 +13,55 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     // Verificar se é instrutor
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    if (user?.role !== 'INSTRUCTOR') {
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'INSTRUCTOR') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { title, content, type, duration, order, videoUrl, attachment } = await req.json()
 
     // Verificar se a aula pertence ao instrutor
-    const existingLesson = await prisma.lesson.findFirst({
-      where: {
-        id: params.id,
-        module: {
-          course: {
-            instructor: {
-              email: session.user.email as string
-            }
-          }
-        }
-      }
-    })
+    const { data: existingLesson, error: lessonErr } = await supabaseAdmin
+      .from('Lesson')
+      .select(`
+        id,
+        module:Module(
+          course:Course(id, instructorId)
+        )
+      `)
+      .eq('id', params.id)
+      .eq('module.course.instructorId', session.user.id)
+      .single()
 
-    if (!existingLesson) {
+    if (lessonErr || !existingLesson) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
     }
 
     // Atualizar aula
-    const lesson = await prisma.lesson.update({
-      where: { id: params.id },
-      data: {
+    const { data: updatedLesson, error: updateErr } = await supabaseAdmin
+      .from('Lesson')
+      .update({
         ...(title && { title }),
         ...(content && { content }),
         ...(type && { type }),
         ...(duration !== undefined && { duration }),
         ...(order !== undefined && { order }),
         ...(videoUrl !== undefined && { videoUrl }),
-        ...(attachment !== undefined && { attachment })
-      }
-    })
+        ...(attachment !== undefined && { attachment }),
+        updatedAt: new Date().toISOString()
+      })
+      .eq('id', params.id)
+      .select('*')
+      .single()
+
+    if (updateErr) {
+      console.error('Error updating lesson:', updateErr)
+      return NextResponse.json({ error: 'Failed to update lesson' }, { status: 500 })
+    }
 
     return NextResponse.json({
       success: true,
-      lesson
+      lesson: updatedLesson
     })
   } catch (error) {
     console.error('Error updating lesson:', error)
@@ -79,37 +82,38 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     // Verificar se é instrutor
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    if (user?.role !== 'INSTRUCTOR') {
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'INSTRUCTOR') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Verificar se a aula pertence ao instrutor
-    const existingLesson = await prisma.lesson.findFirst({
-      where: {
-        id: params.id,
-        module: {
-          course: {
-            instructor: {
-              email: session.user.email as string
-            }
-          }
-        }
-      }
-    })
+    const { data: existingLesson, error: lessonErr } = await supabaseAdmin
+      .from('Lesson')
+      .select(`
+        id,
+        module:Module(
+          course:Course(id, instructorId)
+        )
+      `)
+      .eq('id', params.id)
+      .eq('module.course.instructorId', session.user.id)
+      .single()
 
-    if (!existingLesson) {
+    if (lessonErr || !existingLesson) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
     }
 
     // Excluir aula
-    await prisma.lesson.delete({
-      where: { id: params.id }
-    })
+    const { error: deleteErr } = await supabaseAdmin
+      .from('Lesson')
+      .delete()
+      .eq('id', params.id)
+
+    if (deleteErr) {
+      console.error('Error deleting lesson:', deleteErr)
+      return NextResponse.json({ error: 'Failed to delete lesson' }, { status: 500 })
+    }
 
     return NextResponse.json({
       success: true,

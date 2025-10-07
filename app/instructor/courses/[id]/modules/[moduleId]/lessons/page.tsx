@@ -37,7 +37,7 @@ export default function ModuleLessons() {
 
   const fetchModuleData = async () => {
     try {
-      const response = await fetch(`/api/admin/modules/${moduleId}`)
+      const response = await fetch(`/api/instructor/modules/${moduleId}`)
       const data = await response.json()
       
       if (data.success) {
@@ -52,7 +52,7 @@ export default function ModuleLessons() {
   const fetchLessons = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/lessons?moduleId=${moduleId}`)
+      const response = await fetch(`/api/instructor/lessons?moduleId=${moduleId}`)
       const data = await response.json()
       
       if (data.success) {
@@ -70,7 +70,7 @@ export default function ModuleLessons() {
     if (!confirm('Tem certeza que deseja excluir esta aula?')) return
 
     try {
-      const response = await fetch(`/api/admin/lessons/${lessonId}`, {
+      const response = await fetch(`/api/instructor/lessons/${lessonId}`, {
         method: 'DELETE'
       })
 
@@ -260,7 +260,7 @@ function CreateLessonModal({
     
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/lessons', {
+      const response = await fetch('/api/instructor/lessons', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
