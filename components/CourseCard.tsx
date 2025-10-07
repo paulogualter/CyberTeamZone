@@ -193,7 +193,7 @@ export default function CourseCard({ course, onClick }: CourseCardProps) {
   console.log('Course:', course.title, 'Category:', course.category?.name, 'Neon Style:', neonStyle)
 
   return (
-    <div className="relative p-[10px] bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 rounded-xl shadow-[0_0_30px_rgba(59,130,246,0.8),0_0_60px_rgba(139,92,246,0.6)] hover:shadow-[0_0_40px_rgba(59,130,246,1),0_0_80px_rgba(139,92,246,0.8)] transition-shadow duration-300">
+    <div className="relative p-[3px] bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 rounded-xl shadow-[0_0_30px_rgba(59,130,246,0.8),0_0_60px_rgba(139,92,246,0.6)] hover:shadow-[0_0_40px_rgba(59,130,246,1),0_0_80px_rgba(139,92,246,0.8)] transition-shadow duration-300">
       <motion.div
         whileHover={{ y: -5 }}
         whileTap={{ scale: 0.98 }}
