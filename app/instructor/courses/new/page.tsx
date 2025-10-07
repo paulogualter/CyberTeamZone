@@ -85,6 +85,10 @@ export default function CreateCourse() {
         body: formData
       })
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
       const data = await response.json()
 
       if (data.success) {
@@ -98,7 +102,7 @@ export default function CreateCourse() {
       }
     } catch (error) {
       console.error('Error uploading image:', error)
-      toast.error('Erro ao enviar imagem')
+      toast.error(`Erro ao fazer upload do arquivo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
     } finally {
       setUploadingImage(false)
     }

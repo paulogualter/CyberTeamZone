@@ -153,40 +153,27 @@ export async function validateImageFile(file: File): Promise<{
   }
 
   try {
-    // Create image object to validate dimensions
-    const img = new Image()
-    const url = URL.createObjectURL(file)
+    // For server-side validation, we'll skip detailed image dimension checking
+    // since Image() constructor is not available in Node.js
+    // Basic validation is already done in validateFileUpload
     
-    return new Promise((resolve) => {
-      img.onload = () => {
-        URL.revokeObjectURL(url)
-        
-        // Check dimensions
-        if (img.width > 4000 || img.height > 4000) {
-          resolve({
-            valid: false,
-            error: 'Imagem muito grande. Dimensões máximas: 4000x4000px'
-          })
-          return
-        }
-        
-        resolve({
-          valid: true,
-          dimensions: { width: img.width, height: img.height }
-        })
+    // Check file extension as additional validation
+    const extension = '.' + (file.name.split('.').pop()?.toLowerCase() || '')
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif', '.avif']
+    
+    if (!imageExtensions.includes(extension)) {
+      return {
+        valid: false,
+        error: 'Extensão de arquivo não permitida para imagens'
       }
-      
-      img.onerror = () => {
-        URL.revokeObjectURL(url)
-        resolve({
-          valid: false,
-          error: 'Arquivo de imagem inválido'
-        })
-      }
-      
-      img.src = url
-    })
+    }
+
+    return {
+      valid: true,
+      dimensions: { width: 0, height: 0 } // We can't get dimensions server-side easily
+    }
   } catch (error) {
+    console.error('Error validating image file:', error)
     return {
       valid: false,
       error: 'Erro ao validar imagem'
