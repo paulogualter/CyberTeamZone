@@ -1,23 +1,16 @@
-# Ignore development files
-.env*
-!.env.example
-node_modules/
-.next/
+# Ignore everything except the root directory
 dist/
 dist-cloudpanel/
 static-frontend/
-
-# Ignore backup files
+node_modules/
+.next/
+.env*
+!.env.example
 *.backup
 *.backup*
-
-# Ignore test files
+scripts/
+examples/
 test-*
 *.test.*
-
-# Ignore documentation
 *.md
 !README.md
-
-# Ignore scripts
-scripts/
