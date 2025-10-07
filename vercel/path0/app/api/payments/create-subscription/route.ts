@@ -1,0 +1,141 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { supabaseAdmin } from '@/lib/supabase'
+import Stripe from 'stripe'
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2023-10-16',
+})
+
+const planPrices = {
+  basic: 4990, // R$ 49.90 em centavos
+  gold: 7990, // R$ 79.90 em centavos
+  diamond: 12990, // R$ 129.90 em centavos
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    console.log('=== CREATE SUBSCRIPTION DEBUG ===')
+    
+    const session = await getServerSession(authOptions)
+    console.log('Session found:', !!session)
+    console.log('User ID:', session?.user?.id)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    }
+
+    const { planId, userId } = await request.json()
+    console.log('Plan ID:', planId)
+    console.log('User ID:', userId)
+
+    if (!planId || !userId) {
+      return NextResponse.json({ error: 'Plano e usuário são obrigatórios' }, { status: 400 })
+    }
+
+    const planPrice = planPrices[planId as keyof typeof planPrices]
+    console.log('Plan price:', planPrice)
+    if (!planPrice) {
+      return NextResponse.json({ error: 'Plano inválido' }, { status: 400 })
+    }
+    
+    console.log('STRIPE_SECRET_KEY available:', !!process.env.STRIPE_SECRET_KEY)
+
+    // Verificar se o usuário é administrador e status de assinatura atual
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('User')
+      .select('role, subscriptionStatus')
+      .eq('id', userId)
+      .single()
+
+    if (userError) {
+      console.error('Error fetching user:', userError)
+      return NextResponse.json({ error: 'Erro ao buscar usuário' }, { status: 500 })
+    }
+
+    if (user?.role === 'ADMIN') {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Administradores não precisam de assinatura',
+        redirectTo: '/dashboard'
+      })
+    }
+
+    // Verificar se o usuário já tem uma assinatura ativa (pelo campo do próprio usuário)
+    // Administradores e instrutores não precisam de assinatura
+    if (user?.subscriptionStatus === 'ACTIVE' && user?.role !== 'ADMIN' && user?.role !== 'INSTRUCTOR') {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Usuário já possui uma assinatura ativa',
+        redirectTo: '/dashboard'
+      })
+    }
+
+    // Administradores e instrutores têm acesso total, não precisam de assinatura
+    if (user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') {
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Acesso total concedido (Admin/Instrutor)',
+        redirectTo: user?.role === 'INSTRUCTOR' ? '/instructor' : '/admin'
+      })
+    }
+
+    // Criar produto no Stripe se não existir
+    let productId = process.env[`STRIPE_${planId.toUpperCase()}_PRODUCT_ID`]
+    
+    if (!productId) {
+      const product = await stripe.products.create({
+        name: `CyberTeam ${planId.charAt(0).toUpperCase() + planId.slice(1)} Plan`,
+        description: `Plano ${planId} do CyberTeam.Zone`,
+      })
+      productId = product.id
+    }
+
+    // Criar preço no Stripe se não existir
+    let priceId = process.env[`STRIPE_${planId.toUpperCase()}_PRICE_ID`]
+    
+    if (!priceId) {
+      const price = await stripe.prices.create({
+        product: productId,
+        unit_amount: planPrice,
+        currency: 'brl',
+        recurring: {
+          interval: 'month',
+        },
+      })
+      priceId = price.id
+    }
+
+    // Criar sessão de checkout do Stripe
+    const checkoutSession = await stripe.checkout.sessions.create({
+      payment_method_types: ['card', 'pix'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: `${process.env.NEXTAUTH_URL}/dashboard?subscription=success`,
+      cancel_url: `${process.env.NEXTAUTH_URL}/plans?subscription=cancelled`,
+      customer_email: session.user.email || undefined,
+      metadata: {
+        userId: userId,
+        planId: planId,
+      },
+    })
+
+    return NextResponse.json({
+      success: true,
+      paymentUrl: checkoutSession.url,
+      sessionId: checkoutSession.id,
+    })
+
+  } catch (error) {
+    console.error('Erro ao criar assinatura:', error)
+    return NextResponse.json(
+      { success: false, error: 'Erro interno do servidor' },
+      { status: 500 }
+    )
+  }
+}
