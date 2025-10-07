@@ -114,7 +114,7 @@ export default function InstructorCourses() {
                 key={course.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="group relative rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors overflow-hidden border border-slate-700"
+                className="group relative rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors overflow-hidden border-2 border-gray-500"
               >
                 {/* Cover Image */}
                 {course.coverImage ? (

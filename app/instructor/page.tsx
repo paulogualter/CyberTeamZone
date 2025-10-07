@@ -181,7 +181,7 @@ export default function InstructorDashboard() {
                     key={course.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="group relative rounded-xl bg-slate-700 hover:bg-slate-600 transition-colors overflow-hidden border border-slate-700"
+                    className="group relative rounded-xl bg-slate-700 hover:bg-slate-600 transition-colors overflow-hidden border-2 border-gray-500"
                   >
                     {course.coverImage ? (
                       <div className="relative h-40 w-full bg-slate-900">
