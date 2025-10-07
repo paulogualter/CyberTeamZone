@@ -181,13 +181,16 @@ export default function CourseCard({ course, onClick }: CourseCardProps) {
       default:
         return {
           gradient: 'from-blue-500 to-purple-600',
-          shadow: '0 0 20px rgba(59,130,246,0.3)',
-          hoverShadow: '0 0 25px rgba(59,130,246,0.5)'
+          shadow: '0 0 25px rgba(59,130,246,0.6)',
+          hoverShadow: '0 0 35px rgba(59,130,246,0.8)'
         }
     }
   }
 
   const neonStyle = getCategoryNeonStyle(course.category?.name || '')
+  
+  // Debug: log the category name
+  console.log('Course:', course.title, 'Category:', course.category?.name, 'Neon Style:', neonStyle)
 
   return (
     <motion.div
