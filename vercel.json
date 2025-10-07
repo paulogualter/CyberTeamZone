@@ -1,5 +1,11 @@
 {
-  "framework": "nextjs",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30
