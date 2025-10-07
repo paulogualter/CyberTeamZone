@@ -100,7 +100,6 @@ export const dynamicImports = {
   AdminDashboard: () => import('@/components/AdminDashboard'),
   
   // Páginas
-  InstructorPage: () => import('@/app/instructor/page'),
   AdminPage: () => import('@/app/admin/page'),
 }
 
