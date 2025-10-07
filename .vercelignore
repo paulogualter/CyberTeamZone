@@ -1,0 +1,23 @@
+# Ignore development files
+.env*
+!.env.example
+node_modules/
+.next/
+dist/
+dist-cloudpanel/
+static-frontend/
+
+# Ignore backup files
+*.backup
+*.backup*
+
+# Ignore test files
+test-*
+*.test.*
+
+# Ignore documentation
+*.md
+!README.md
+
+# Ignore scripts
+scripts/
