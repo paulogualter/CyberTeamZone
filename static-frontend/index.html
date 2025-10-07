@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberTeam.Zone - Cibersegurança</title>
+    <meta name="description" content="Aprenda cibersegurança com cursos especializados em segurança da informação, hacking ético e proteção de dados">
+    <meta name="keywords" content="cibersegurança, segurança da informação, hacking ético, cursos online, cyberteam">
+    <meta name="author" content="CyberTeam.Zone">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://seu-dominio.com/">
+    <meta property="og:title" content="CyberTeam.Zone - Cibersegurança">
+    <meta property="og:description" content="Aprenda cibersegurança com cursos especializados">
+    <meta property="og:image" content="https://seu-dominio.com/images/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://seu-dominio.com/">
+    <meta property="twitter:title" content="CyberTeam.Zone - Cibersegurança">
+    <meta property="twitter:description" content="Aprenda cibersegurança com cursos especializados">
+    <meta property="twitter:image" content="https://seu-dominio.com/images/og-image.jpg">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    
+    <!-- CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Header -->
+    <header class="bg-slate-800 shadow-lg sticky top-0 z-50" x-data="{ mobileMenuOpen: false }">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold gradient-text">CyberTeam.Zone</h1>
+                </div>
+                <nav class="hidden md:flex space-x-6">
+                    <a href="#cursos" class="hover:text-blue-400 transition-colors duration-200">Cursos</a>
+                    <a href="#sobre" class="hover:text-blue-400 transition-colors duration-200">Sobre</a>
+                    <a href="#contato" class="hover:text-blue-400 transition-colors duration-200">Contato</a>
+                    <a href="https://seu-app.vercel.app/api/../auth/signin" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                        Entrar
+                    </a>
+                </nav>
+                <button class="md:hidden" @click="mobileMenuOpen = !mobileMenuOpen">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+            <!-- Mobile Menu -->
+            <div x-show="mobileMenuOpen" x-transition class="md:hidden mt-4 pb-4">
+                <div class="flex flex-col space-y-2">
+                    <a href="#cursos" class="hover:text-blue-400 transition-colors duration-200">Cursos</a>
+                    <a href="#sobre" class="hover:text-blue-400 transition-colors duration-200">Sobre</a>
+                    <a href="#contato" class="hover:text-blue-400 transition-colors duration-200">Contato</a>
+                    <a href="https://seu-app.vercel.app/api/../auth/signin" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 text-center">
+                        Entrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-blue-900 to-purple-900 py-20">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-5xl font-bold mb-6 animate-fade-in">Aprenda Cibersegurança</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto animate-fade-in">
+                Cursos especializados em segurança da informação, 
+                hacking ético e proteção de dados
+            </p>
+            <div class="space-x-4 animate-fade-in">
+                <a href="https://seu-app.vercel.app/api/../auth/signin" 
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors duration-200 inline-block">
+                    Começar Agora
+                </a>
+                <a href="#cursos" 
+                   class="border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors duration-200 inline-block">
+                    Ver Cursos
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cursos Section -->
+    <section id="cursos" class="py-20">
+        <div class="container mx-auto px-4">
+            <h3 class="text-3xl font-bold text-center mb-12">Nossos Cursos</h3>
+            <div class="grid md:grid-cols-3 gap-8" id="cursos-container">
+                <!-- Loading skeleton -->
+                <div class="bg-slate-700 rounded-lg p-6 animate-pulse">
+                    <div class="h-4 bg-gray-600 rounded mb-2"></div>
+                    <div class="h-3 bg-gray-600 rounded mb-4"></div>
+                    <div class="h-8 bg-gray-600 rounded"></div>
+                </div>
+                <div class="bg-slate-700 rounded-lg p-6 animate-pulse">
+                    <div class="h-4 bg-gray-600 rounded mb-2"></div>
+                    <div class="h-3 bg-gray-600 rounded mb-4"></div>
+                    <div class="h-8 bg-gray-600 rounded"></div>
+                </div>
+                <div class="bg-slate-700 rounded-lg p-6 animate-pulse">
+                    <div class="h-4 bg-gray-600 rounded mb-2"></div>
+                    <div class="h-3 bg-gray-600 rounded mb-4"></div>
+                    <div class="h-8 bg-gray-600 rounded"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sobre Section -->
+    <section id="sobre" class="py-20 bg-slate-800">
+        <div class="container mx-auto px-4">
+            <h3 class="text-3xl font-bold text-center mb-12">Sobre Nós</h3>
+            <div class="max-w-4xl mx-auto text-center">
+                <p class="text-lg mb-6">
+                    O CyberTeam.Zone é uma plataforma especializada em educação em cibersegurança, 
+                    oferecendo cursos práticos e atualizados para profissionais e entusiastas da área.
+                </p>
+                <div class="grid md:grid-cols-3 gap-8 mt-12">
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-blue-400 mb-2">50+</div>
+                        <div class="text-gray-300">Cursos Disponíveis</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-blue-400 mb-2">1000+</div>
+                        <div class="text-gray-300">Alunos Ativos</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-blue-400 mb-2">98%</div>
+                        <div class="text-gray-300">Satisfação</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contato Section -->
+    <section id="contato" class="py-20">
+        <div class="container mx-auto px-4">
+            <h3 class="text-3xl font-bold text-center mb-12">Entre em Contato</h3>
+            <div class="max-w-2xl mx-auto text-center">
+                <p class="text-lg mb-8">
+                    Tem dúvidas? Quer saber mais sobre nossos cursos? 
+                    Entre em contato conosco!
+                </p>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-center space-x-2">
+                        <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                        </svg>
+                        <span>contato@cyberteam.zone</span>
+                    </div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Brasil</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 py-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 CyberTeam.Zone. Todos os direitos reservados.</p>
+            <p class="text-sm text-gray-400 mt-2">
+                Desenvolvido com ❤️ para a comunidade de cibersegurança
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Configuração da API
+        const API_URL = 'https://seu-app.vercel.app/api';
+        
+        // Carregar cursos
+        async function loadCursos() {
+            try {
+                const response = await fetch(`${API_URL}/courses`);
+                if (!response.ok) throw new Error('Erro ao carregar cursos');
+                
+                const data = await response.json();
+                const cursos = data.courses || data;
+                
+                const container = document.getElementById('cursos-container');
+                container.innerHTML = cursos.map(curso => `
+                    <div class="bg-slate-700 rounded-lg p-6 hover:bg-slate-600 transition-colors duration-200 animate-fade-in">
+                        <h4 class="text-xl font-semibold mb-2">${curso.title}</h4>
+                        <p class="text-gray-300 mb-4 line-clamp-3">${curso.description || curso.shortDescription || 'Descrição não disponível'}</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-blue-400 font-bold">R$ ${curso.price || '0,00'}</span>
+                            <a href="${API_URL}/../course/${curso.id}" 
+                               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors duration-200">
+                                Ver Curso
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao carregar cursos:', error);
+                const container = document.getElementById('cursos-container');
+                container.innerHTML = `
+                    <div class="col-span-full text-center text-gray-400">
+                        <p>Erro ao carregar cursos. Tente novamente mais tarde.</p>
+                        <a href="${API_URL}/.." 
+                           class="text-blue-400 hover:underline mt-2 inline-block">
+                            Acessar aplicação completa
+                        </a>
+                    </div>
+                `;
+            }
+        }
+        
+        // Carregar cursos quando a página carregar
+        document.addEventListener('DOMContentLoaded', loadCursos);
+        
+        // Smooth scroll para links internos
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "apiUrl": "https://seu-app.vercel.app/api",
+  "domain": "seu-dominio.com",
+  "version": "1.0.0",
+  "lastUpdated": "2025-10-06T07:50:36Z",
+  "features": {
+    "dynamicCourses": true,
+    "responsiveDesign": true,
+    "seoOptimized": true,
+    "securityHeaders": true,
+    "caching": true,
+    "compression": true
+  }
+}
