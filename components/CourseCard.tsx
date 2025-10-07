@@ -193,23 +193,11 @@ export default function CourseCard({ course, onClick }: CourseCardProps) {
   console.log('Course:', course.title, 'Category:', course.category?.name, 'Neon Style:', neonStyle)
 
   return (
-    <div className="relative">
-      {/* Neon Border */}
-      <div 
-        className="absolute inset-0 rounded-xl p-[10px]"
-        style={{
-          background: 'linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4, #10b981)',
-          boxShadow: '0 0 30px rgba(59,130,246,0.8), 0 0 60px rgba(139,92,246,0.6)',
-        }}
-      />
-      
+    <div className="relative p-[10px] bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 rounded-xl shadow-[0_0_30px_rgba(59,130,246,0.8),0_0_60px_rgba(139,92,246,0.6)] hover:shadow-[0_0_40px_rgba(59,130,246,1),0_0_80px_rgba(139,92,246,0.8)] transition-shadow duration-300">
       <motion.div
         whileHover={{ y: -5 }}
         whileTap={{ scale: 0.98 }}
-        className="group relative rounded-xl bg-slate-800/50 backdrop-blur-sm border border-slate-700 hover:border-slate-600 transition-all duration-300"
-        style={{
-          margin: '10px',
-        }}
+        className="group relative rounded-lg bg-slate-800/50 backdrop-blur-sm border border-slate-700 hover:border-slate-600 transition-all duration-300 overflow-hidden"
       >
       {/* Course Image */}
       <div className="relative h-48 bg-gradient-to-br from-blue-600 to-purple-600">
