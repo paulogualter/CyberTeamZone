@@ -92,10 +92,14 @@ export default function CreateCourse() {
       const data = await response.json()
 
       if (data.success) {
+        const imageUrl = data.url || data.fileUrl
+        console.log('✅ Image uploaded successfully:', imageUrl)
         setFormData(prev => ({
           ...prev,
-          coverImage: data.url || data.fileUrl
+          coverImage: imageUrl
         }))
+        // Clear local preview and use server URL
+        setCoverPreview('')
         toast.success('Imagem enviada com sucesso!')
       } else {
         toast.error(data.error || 'Erro ao enviar imagem')
@@ -334,17 +338,31 @@ export default function CreateCourse() {
             {/* Cover Image */}
             <div>
               <h2 className="text-xl font-semibold text-white mb-6">Imagem de Capa</h2>
+              {/* Debug info */}
+              <div className="text-xs text-gray-400 mb-2">
+                Debug: coverPreview={coverPreview ? 'set' : 'empty'}, formData.coverImage={formData.coverImage ? 'set' : 'empty'}
+              </div>
               <div className="space-y-4">
                 {(coverPreview || formData.coverImage) && (
                   <div className="flex items-center space-x-4">
                     <img
                       src={coverPreview || formData.coverImage}
                       alt="Preview"
-                      className="w-32 h-20 object-cover rounded-lg"
+                      className="w-32 h-20 object-cover rounded-lg border border-gray-600"
+                      onError={(e) => {
+                        console.error('Image load error:', e.currentTarget.src)
+                        e.currentTarget.style.display = 'none'
+                      }}
+                      onLoad={() => {
+                        console.log('Image loaded successfully:', coverPreview || formData.coverImage)
+                      }}
                     />
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, coverImage: '' })}
+                      onClick={() => {
+                        setFormData({ ...formData, coverImage: '' })
+                        setCoverPreview('')
+                      }}
                       className="text-red-400 hover:text-red-300 text-sm"
                     >
                       Remover
