@@ -9,7 +9,7 @@ const nextConfig = {
       },
     ],
   },
-  webpack: (config) => {
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': require('path').resolve(__dirname, '.'),
@@ -18,6 +18,10 @@ const nextConfig = {
       '@/hooks': require('path').resolve(__dirname, './hooks'),
       '@/types': require('path').resolve(__dirname, './types'),
     }
+    
+    // Force resolution of .ts and .tsx files
+    config.resolve.extensions = ['.ts', '.tsx', '.js', '.jsx', '.json']
+    
     return config
   },
   async headers() {
