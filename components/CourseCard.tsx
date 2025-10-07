@@ -91,11 +91,19 @@ export default function CourseCard({ course, onClick }: CourseCardProps) {
   }
 
 
+  // Check if course is Red Team Operations or Penetration Testing
+  const isRedTeamCategory = course.category?.name?.toLowerCase() === 'red team operations' || 
+                           course.category?.name?.toLowerCase() === 'penetration testing'
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
       whileTap={{ scale: 0.98 }}
-      className="group relative rounded-lg bg-slate-800/50 backdrop-blur-sm border border-slate-700 hover:border-slate-600 transition-all duration-300 overflow-hidden"
+      className={`group relative rounded-lg bg-slate-800/50 backdrop-blur-sm transition-all duration-300 overflow-hidden ${
+        isRedTeamCategory 
+          ? 'border-2 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.6)] hover:shadow-[0_0_25px_rgba(239,68,68,0.8)] hover:border-red-400' 
+          : 'border border-slate-700 hover:border-slate-600'
+      }`}
     >
       {/* Course Image */}
       <div className="relative h-48 bg-gradient-to-br from-blue-600 to-purple-600">
