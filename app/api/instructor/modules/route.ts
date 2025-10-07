@@ -1,7 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { supabaseAdmin } from '@/lib/supabase'
+
+// GET - Listar módulos de um curso (para instrutores)
+export async function GET(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Verificar se é instrutor
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'INSTRUCTOR') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { searchParams } = new URL(req.url)
+    const courseId = searchParams.get('courseId')
+
+    if (!courseId) {
+      return NextResponse.json({ error: 'Course ID is required' }, { status: 400 })
+    }
+
+    // Verificar se o curso pertence ao instrutor
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from('Course')
+      .select('id, instructorId')
+      .eq('id', courseId)
+      .eq('instructorId', session.user.id)
+      .single()
+
+    if (courseErr || !course) {
+      return NextResponse.json({ error: 'Course not found or access denied' }, { status: 404 })
+    }
+
+    // Buscar módulos do curso
+    const { data: modules, error: modErr } = await supabaseAdmin
+      .from('Module')
+      .select(`
+        *,
+        lessons:Lesson(*)
+      `)
+      .eq('courseId', courseId)
+      .order('order', { ascending: true })
+
+    if (modErr) {
+      console.error('Error fetching modules:', modErr)
+      return NextResponse.json({ error: 'Failed to fetch modules' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true, modules: modules || [] })
+  } catch (error) {
+    console.error('Error fetching modules:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
 
 // POST - Criar novo módulo
 export async function POST(req: NextRequest) {
@@ -13,12 +72,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar se é instrutor
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    if (user?.role !== 'INSTRUCTOR') {
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'INSTRUCTOR') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -33,36 +88,63 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar se o curso pertence ao instrutor
-    const course = await prisma.course.findFirst({
-      where: {
-        id: courseId,
-        instructor: {
-          email: session.user.email as string
-        }
-      }
-    })
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from('Course')
+      .select('id, instructorId')
+      .eq('id', courseId)
+      .eq('instructorId', session.user.id)
+      .single()
 
-    if (!course) {
+    if (courseErr || !course) {
       return NextResponse.json(
         { error: 'Course not found or access denied' },
         { status: 404 }
       )
     }
 
+    // Próxima ordem se não informada
+    let moduleOrder = order as number | undefined
+    if (!moduleOrder) {
+      const { data: last, error: lastErr } = await supabaseAdmin
+        .from('Module')
+        .select('order')
+        .eq('courseId', courseId)
+        .order('order', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (lastErr) {
+        console.warn('Could not get last module order:', lastErr)
+      }
+      moduleOrder = last?.order ? (Number(last.order) + 1) : 1
+    }
+
+    const nowIso = new Date().toISOString()
+    const moduleId = `module_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+
     // Criar módulo
-    const module = await prisma.module.create({
-      data: {
+    const { data: created, error: createErr } = await supabaseAdmin
+      .from('Module')
+      .insert({
+        id: moduleId,
         title,
         description: description || '',
-        order: order || 0,
         courseId,
-        isPublished: false
-      }
-    })
+        order: moduleOrder,
+        isPublished: false,
+        createdAt: nowIso,
+        updatedAt: nowIso
+      })
+      .select('*, lessons:Lesson(*)')
+      .single()
+
+    if (createErr) {
+      console.error('Error creating module:', createErr)
+      return NextResponse.json({ error: 'Failed to create module' }, { status: 500 })
+    }
 
     return NextResponse.json({
       success: true,
-      module
+      module: created
     }, { status: 201 })
   } catch (error) {
     console.error('Error creating module:', error)

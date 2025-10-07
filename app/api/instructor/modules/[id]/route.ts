@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { supabaseAdmin } from '@/lib/supabase'
 
 // PUT - Atualizar módulo
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
@@ -13,46 +13,49 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     // Verificar se é instrutor
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    if (user?.role !== 'INSTRUCTOR') {
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'INSTRUCTOR') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { title, description, order } = await req.json()
 
     // Verificar se o módulo pertence ao instrutor
-    const existingModule = await prisma.module.findFirst({
-      where: {
-        id: params.id,
-        course: {
-          instructor: {
-            email: session.user.email as string
-          }
-        }
-      }
-    })
+    const { data: existingModule, error: moduleErr } = await supabaseAdmin
+      .from('Module')
+      .select(`
+        id,
+        course:Course(id, instructorId)
+      `)
+      .eq('id', params.id)
+      .eq('course.instructorId', session.user.id)
+      .single()
 
-    if (!existingModule) {
+    if (moduleErr || !existingModule) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 })
     }
 
     // Atualizar módulo
-    const module = await prisma.module.update({
-      where: { id: params.id },
-      data: {
+    const { data: updatedModule, error: updateErr } = await supabaseAdmin
+      .from('Module')
+      .update({
         ...(title && { title }),
         ...(description !== undefined && { description }),
-        ...(order !== undefined && { order })
-      }
-    })
+        ...(order !== undefined && { order }),
+        updatedAt: new Date().toISOString()
+      })
+      .eq('id', params.id)
+      .select('*')
+      .single()
+
+    if (updateErr) {
+      console.error('Error updating module:', updateErr)
+      return NextResponse.json({ error: 'Failed to update module' }, { status: 500 })
+    }
 
     return NextResponse.json({
       success: true,
-      module
+      module: updatedModule
     })
   } catch (error) {
     console.error('Error updating module:', error)
@@ -73,35 +76,36 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     // Verificar se é instrutor
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    if (user?.role !== 'INSTRUCTOR') {
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'INSTRUCTOR') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Verificar se o módulo pertence ao instrutor
-    const existingModule = await prisma.module.findFirst({
-      where: {
-        id: params.id,
-        course: {
-          instructor: {
-            email: session.user.email as string
-          }
-        }
-      }
-    })
+    const { data: existingModule, error: moduleErr } = await supabaseAdmin
+      .from('Module')
+      .select(`
+        id,
+        course:Course(id, instructorId)
+      `)
+      .eq('id', params.id)
+      .eq('course.instructorId', session.user.id)
+      .single()
 
-    if (!existingModule) {
+    if (moduleErr || !existingModule) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 })
     }
 
-    // Excluir módulo (cascade delete lessons)
-    await prisma.module.delete({
-      where: { id: params.id }
-    })
+    // Excluir módulo (cascade delete lessons via foreign key)
+    const { error: deleteErr } = await supabaseAdmin
+      .from('Module')
+      .delete()
+      .eq('id', params.id)
+
+    if (deleteErr) {
+      console.error('Error deleting module:', deleteErr)
+      return NextResponse.json({ error: 'Failed to delete module' }, { status: 500 })
+    }
 
     return NextResponse.json({
       success: true,

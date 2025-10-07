@@ -50,7 +50,7 @@ export default function CourseModules() {
   const fetchModules = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/modules?courseId=${courseId}`)
+      const response = await fetch(`/api/instructor/modules?courseId=${courseId}`)
       const data = await response.json()
       
       if (data.success) {
@@ -68,7 +68,7 @@ export default function CourseModules() {
     if (!confirm('Tem certeza que deseja excluir este módulo?')) return
 
     try {
-      const response = await fetch(`/api/admin/modules/${moduleId}`, {
+      const response = await fetch(`/api/instructor/modules/${moduleId}`, {
         method: 'DELETE'
       })
 
@@ -262,7 +262,7 @@ function CreateModuleModal({
     
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/modules', {
+      const response = await fetch('/api/instructor/modules', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
