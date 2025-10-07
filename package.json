@@ -6,10 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "db:setup": "node scripts/setup-supabase.js",
-    "create:admin": "node scripts/create-admin.js",
-    "make:admin": "node scripts/make-admin.js"
+    "lint": "next lint"
   },
   "dependencies": {
     "@headlessui/react": "1.7.17",
