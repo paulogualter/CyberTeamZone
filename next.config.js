@@ -9,7 +9,8 @@ const nextConfig = {
       },
     ],
   },
-  webpack: (config) => {
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    // Force resolution of paths
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': require('path').resolve(__dirname, '.'),
@@ -18,6 +19,16 @@ const nextConfig = {
       '@/hooks': require('path').resolve(__dirname, './hooks'),
       '@/types': require('path').resolve(__dirname, './types'),
     }
+    
+    // Force resolution of extensions
+    config.resolve.extensions = ['.ts', '.tsx', '.js', '.jsx', '.json']
+    
+    // Force resolution of modules
+    config.resolve.modules = [
+      require('path').resolve(__dirname, '.'),
+      'node_modules'
+    ]
+    
     return config
   },
 }

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "./vercel-build.sh",
+  "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
   "functions": {
@@ -12,11 +12,5 @@
     "env": {
       "NODE_VERSION": "20"
     }
-  },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
-    }
-  ]
+  }
 }
