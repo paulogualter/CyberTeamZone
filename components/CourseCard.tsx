@@ -97,92 +97,92 @@ export default function CourseCard({ course, onClick }: CourseCardProps) {
       case 'blue team defense':
         return {
           gradient: 'from-blue-500 to-blue-600',
-          shadow: 'shadow-[0_0_20px_rgba(59,130,246,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(59,130,246,0.6)]'
+          shadow: '0 0 20px rgba(59,130,246,0.4)',
+          hoverShadow: '0 0 25px rgba(59,130,246,0.6)'
         }
       case 'cloud security':
         return {
           gradient: 'from-sky-500 to-sky-600',
-          shadow: 'shadow-[0_0_20px_rgba(14,165,233,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(14,165,233,0.6)]'
+          shadow: '0 0 20px rgba(14,165,233,0.4)',
+          hoverShadow: '0 0 25px rgba(14,165,233,0.6)'
         }
       case 'compliance & governance':
         return {
           gradient: 'from-amber-500 to-amber-600',
-          shadow: 'shadow-[0_0_20px_rgba(245,158,11,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(245,158,11,0.6)]'
+          shadow: '0 0 20px rgba(245,158,11,0.4)',
+          hoverShadow: '0 0 25px rgba(245,158,11,0.6)'
         }
       case 'cryptography':
         return {
           gradient: 'from-indigo-500 to-indigo-600',
-          shadow: 'shadow-[0_0_20px_rgba(99,102,241,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]'
+          shadow: '0 0 20px rgba(99,102,241,0.4)',
+          hoverShadow: '0 0 25px rgba(99,102,241,0.6)'
         }
       case 'digital forensics':
         return {
           gradient: 'from-teal-500 to-teal-600',
-          shadow: 'shadow-[0_0_20px_rgba(20,184,166,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(20,184,166,0.6)]'
+          shadow: '0 0 20px rgba(20,184,166,0.4)',
+          hoverShadow: '0 0 25px rgba(20,184,166,0.6)'
         }
       case 'incident response':
         return {
           gradient: 'from-orange-500 to-orange-600',
-          shadow: 'shadow-[0_0_20px_rgba(249,115,22,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(249,115,22,0.6)]'
+          shadow: '0 0 20px rgba(249,115,22,0.4)',
+          hoverShadow: '0 0 25px rgba(249,115,22,0.6)'
         }
       case 'iot security':
         return {
           gradient: 'from-emerald-500 to-emerald-600',
-          shadow: 'shadow-[0_0_20px_rgba(16,185,129,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(16,185,129,0.6)]'
+          shadow: '0 0 20px rgba(16,185,129,0.4)',
+          hoverShadow: '0 0 25px rgba(16,185,129,0.6)'
         }
       case 'malware analysis':
         return {
           gradient: 'from-lime-500 to-lime-600',
-          shadow: 'shadow-[0_0_20px_rgba(132,204,22,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(132,204,22,0.6)]'
+          shadow: '0 0 20px rgba(132,204,22,0.4)',
+          hoverShadow: '0 0 25px rgba(132,204,22,0.6)'
         }
       case 'mobile security':
         return {
           gradient: 'from-cyan-500 to-cyan-600',
-          shadow: 'shadow-[0_0_20px_rgba(6,182,212,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(6,182,212,0.6)]'
+          shadow: '0 0 20px rgba(6,182,212,0.4)',
+          hoverShadow: '0 0 25px rgba(6,182,212,0.6)'
         }
       case 'network security':
         return {
           gradient: 'from-sky-500 to-blue-600',
-          shadow: 'shadow-[0_0_20px_rgba(0,127,255,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(0,127,255,0.6)]'
+          shadow: '0 0 20px rgba(0,127,255,0.4)',
+          hoverShadow: '0 0 25px rgba(0,127,255,0.6)'
         }
       case 'penetration testing':
         return {
           gradient: 'from-red-500 to-red-600',
-          shadow: 'shadow-[0_0_20px_rgba(239,68,68,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(239,68,68,0.6)]'
+          shadow: '0 0 20px rgba(239,68,68,0.4)',
+          hoverShadow: '0 0 25px rgba(239,68,68,0.6)'
         }
       case 'social engineering':
         return {
           gradient: 'from-yellow-500 to-yellow-600',
-          shadow: 'shadow-[0_0_20px_rgba(234,179,8,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(234,179,8,0.6)]'
+          shadow: '0 0 20px rgba(234,179,8,0.4)',
+          hoverShadow: '0 0 25px rgba(234,179,8,0.6)'
         }
       case 'threat intelligence':
         return {
           gradient: 'from-purple-500 to-purple-600',
-          shadow: 'shadow-[0_0_20px_rgba(168,85,247,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(168,85,247,0.6)]'
+          shadow: '0 0 20px rgba(168,85,247,0.4)',
+          hoverShadow: '0 0 25px rgba(168,85,247,0.6)'
         }
       case 'web application security':
         return {
           gradient: 'from-green-500 to-green-600',
-          shadow: 'shadow-[0_0_20px_rgba(34,197,94,0.4)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(34,197,94,0.6)]'
+          shadow: '0 0 20px rgba(34,197,94,0.4)',
+          hoverShadow: '0 0 25px rgba(34,197,94,0.6)'
         }
       default:
         return {
           gradient: 'from-blue-500 to-purple-600',
-          shadow: 'shadow-[0_0_20px_rgba(59,130,246,0.3)]',
-          hoverShadow: 'hover:shadow-[0_0_25px_rgba(59,130,246,0.5)]'
+          shadow: '0 0 20px rgba(59,130,246,0.3)',
+          hoverShadow: '0 0 25px rgba(59,130,246,0.5)'
         }
     }
   }
@@ -193,7 +193,16 @@ export default function CourseCard({ course, onClick }: CourseCardProps) {
     <motion.div
       whileHover={{ y: -5 }}
       whileTap={{ scale: 0.98 }}
-      className={`group relative rounded-xl p-[2px] bg-gradient-to-r ${neonStyle.gradient} ${neonStyle.shadow} ${neonStyle.hoverShadow} transition-shadow duration-300`}
+      className={`group relative rounded-xl p-[2px] bg-gradient-to-r ${neonStyle.gradient} transition-all duration-300`}
+      style={{
+        boxShadow: neonStyle.shadow,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = neonStyle.hoverShadow
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = neonStyle.shadow
+      }}
     >
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-[10px] overflow-hidden border border-slate-700 hover:border-slate-600 transition-all duration-300">
       {/* Course Image */}
