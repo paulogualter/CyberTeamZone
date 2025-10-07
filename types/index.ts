@@ -86,6 +86,7 @@ export interface Module {
 export interface Lesson {
   id: string
   title: string
+  description?: string
   content: string
   type: 'VIDEO' | 'TEXT' | 'QUIZ' | 'PRACTICAL' | 'CTF'
   duration?: number
@@ -110,31 +111,6 @@ export interface Category {
   updatedAt?: Date
 }
 
-export interface Module {
-  id: string
-  title: string
-  description?: string
-  order: number
-  isPublished: boolean
-  createdAt: Date
-  updatedAt: Date
-  courseId: string
-}
-
-export interface Lesson {
-  id: string
-  title: string
-  content: string
-  type: 'VIDEO' | 'TEXT' | 'QUIZ' | 'PRACTICAL' | 'CTF'
-  duration?: number
-  order: number
-  isPublished: boolean
-  videoUrl?: string
-  attachment?: string
-  createdAt: Date
-  updatedAt: Date
-  moduleId: string
-}
 
 export interface Enrollment {
   id: string

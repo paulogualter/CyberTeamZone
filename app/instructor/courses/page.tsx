@@ -184,10 +184,10 @@ export default function InstructorCourses() {
                       Editar
                     </button>
                     <button
-                      onClick={() => router.push(`/instructor/courses/${course.id}`)}
+                      onClick={() => router.push(`/instructor/courses/${course.id}/modules`)}
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors"
                     >
-                      Gerenciar
+                      Gerenciar Módulos
                     </button>
                     <button
                       onClick={() => handleDeleteCourse(course.id)}
