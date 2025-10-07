@@ -95,7 +95,7 @@ export default function InstructorDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+              <h1 className="text-2xl font-bold text-white">Dashboard - TESTE CARDS ATUALIZADOS</h1>
               <p className="text-gray-300">Visão geral dos seus cursos e estatísticas</p>
             </div>
             <button
