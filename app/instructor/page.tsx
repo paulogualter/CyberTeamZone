@@ -217,9 +217,8 @@ export default function InstructorDashboard() {
                   key={course.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`group relative rounded-xl p-[2px] bg-gradient-to-r ${neonClass} shadow-[0_0_18px_rgba(34,211,238,0.25),0_0_28px_rgba(16,185,129,0.2),0_0_36px_rgba(168,85,247,0.15)] hover:shadow-[0_0_22px_rgba(34,211,238,0.35),0_0_34px_rgba(16,185,129,0.28),0_0_44px_rgba(168,85,247,0.22)] transition-shadow`}
+                  className="group relative rounded-xl bg-slate-700 hover:bg-slate-600 transition-colors overflow-hidden border border-slate-700"
                 >
-                  <div className="bg-slate-700 rounded-[11px] hover:bg-slate-600 transition-colors overflow-hidden border border-slate-700">
                   {course.coverImage ? (
                     <div className="relative h-40 w-full bg-slate-900">
                       <img
