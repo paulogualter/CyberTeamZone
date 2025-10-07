@@ -235,25 +235,55 @@ export default function InstructorDashboard() {
                         </div>
                       </div>
 
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => router.push(`/instructor/courses/${course.id}`)}
-                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition-colors"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => router.push(`/instructor/courses/${course.id}/modules`)}
-                          className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors"
-                        >
-                          Gerenciar Módulos
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCourse(course.id)}
-                          className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm transition-colors"
-                        >
-                          Excluir
-                        </button>
+                      {/* Action Buttons - 2 rows of 3 buttons each */}
+                      <div className="space-y-2">
+                        {/* Row 1 - Primary Actions */}
+                        <div className="grid grid-cols-3 gap-2">
+                          <button
+                            onClick={() => router.push(`/instructor/courses/${course.id}`)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => router.push(`/instructor/courses/${course.id}`)}
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                            Visualizar
+                          </button>
+                          <button
+                            onClick={() => router.push(`/instructor/courses/${course.id}/modules`)}
+                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
+                          >
+                            <BookOpenIcon className="h-4 w-4" />
+                            Módulos
+                          </button>
+                        </div>
+                        
+                        {/* Row 2 - Management Actions */}
+                        <div className="grid grid-cols-3 gap-2">
+                          <button
+                            onClick={() => {/* TODO: Implement deactivate */}}
+                            className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
+                          >
+                            Inativar
+                          </button>
+                          <button
+                            onClick={() => {/* TODO: Implement discontinue */}}
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
+                          >
+                            Descontinuar
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCourse(course.id)}
+                            className="bg-red-800 hover:bg-red-900 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                            Excluir
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
