@@ -196,15 +196,16 @@ export default function CourseCard({ course, onClick }: CourseCardProps) {
     <motion.div
       whileHover={{ y: -5 }}
       whileTap={{ scale: 0.98 }}
-      className={`group relative rounded-xl p-[2px] bg-gradient-to-r ${neonStyle.gradient} transition-all duration-300`}
+      className="group relative rounded-xl p-[3px] transition-all duration-300"
       style={{
-        boxShadow: neonStyle.shadow,
+        background: `linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4, #10b981)`,
+        boxShadow: '0 0 30px rgba(59,130,246,0.6), 0 0 60px rgba(139,92,246,0.4)',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = neonStyle.hoverShadow
+        e.currentTarget.style.boxShadow = '0 0 40px rgba(59,130,246,0.8), 0 0 80px rgba(139,92,246,0.6)'
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = neonStyle.shadow
+        e.currentTarget.style.boxShadow = '0 0 30px rgba(59,130,246,0.6), 0 0 60px rgba(139,92,246,0.4)'
       }}
     >
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-[10px] overflow-hidden border border-slate-700 hover:border-slate-600 transition-all duration-300">
