@@ -38,8 +38,14 @@ const SmartCourseImage: React.FC<SmartCourseImageProps> = ({
 
     // Se é um filename da pasta uploads, tentar diferentes estratégias
     if (src && !src.startsWith('http') && !src.startsWith('/api/')) {
-      // Estratégia 1: Tentar API local primeiro
-      setCurrentSrc(`/api/uploads/${src}`)
+      // Se já tem prefixo /uploads/, remover e usar apenas o filename
+      let filename = src
+      if (src.startsWith('/uploads/')) {
+        filename = src.replace('/uploads/', '')
+      }
+      
+      // Estratégia 1: Tentar API local primeiro (só funciona se a imagem estiver deployada)
+      setCurrentSrc(`/api/uploads/${filename}`)
       return
     }
 
@@ -54,16 +60,22 @@ const SmartCourseImage: React.FC<SmartCourseImageProps> = ({
     if (currentSrc?.startsWith('/api/uploads/') && src && !src.startsWith('http') && !src.startsWith('/api/')) {
       console.log(`🔄 Trying fallback strategies for: ${src}`)
       
+      // Extrair filename correto (remover prefixo /uploads/ se existir)
+      let filename = src
+      if (src.startsWith('/uploads/')) {
+        filename = src.replace('/uploads/', '')
+      }
+      
       // Estratégia 2: Tentar acessar diretamente da pasta public (só funciona em dev)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔄 Trying direct public path: /uploads/${src}`)
-        setCurrentSrc(`/uploads/${src}`)
+        console.log(`🔄 Trying direct public path: /uploads/${filename}`)
+        setCurrentSrc(`/uploads/${filename}`)
         return
       }
       
       // Estratégia 3: Tentar URL absoluta (para produção)
-      console.log(`🔄 Trying absolute URL: ${window.location.origin}/api/uploads/${src}`)
-      setCurrentSrc(`${window.location.origin}/api/uploads/${src}`)
+      console.log(`🔄 Trying absolute URL: ${window.location.origin}/api/uploads/${filename}`)
+      setCurrentSrc(`${window.location.origin}/api/uploads/${filename}`)
       return
     }
     
