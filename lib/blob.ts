@@ -1,3 +1,9 @@
 import { put, del, head } from '@vercel/blob'
 
-export { put, del, head }
+// Configuração do Vercel Blob
+const blobConfig = {
+  access: 'public' as const,
+  addRandomSuffix: true,
+}
+
+export { put, del, head, blobConfig }
