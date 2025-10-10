@@ -1,6 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import mime from 'mime-types'
+
+// Função para determinar o Content-Type baseado na extensão do arquivo
+function getContentType(filename: string, mimeType?: string): string {
+  if (mimeType) {
+    return mimeType
+  }
+  
+  const ext = filename.toLowerCase().split('.').pop()
+  const mimeTypes: Record<string, string> = {
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'gif': 'image/gif',
+    'webp': 'image/webp',
+    'svg': 'image/svg+xml',
+    'bmp': 'image/bmp',
+    'ico': 'image/x-icon',
+    'tiff': 'image/tiff',
+    'pdf': 'application/pdf',
+    'txt': 'text/plain',
+    'html': 'text/html',
+    'css': 'text/css',
+    'js': 'application/javascript',
+    'json': 'application/json',
+    'xml': 'application/xml',
+    'zip': 'application/zip',
+    'mp4': 'video/mp4',
+    'mp3': 'audio/mpeg',
+    'wav': 'audio/wav'
+  }
+  
+  return mimeTypes[ext || ''] || 'application/octet-stream'
+}
 
 export async function GET(
   request: NextRequest,
@@ -33,7 +65,7 @@ export async function GET(
 
     // Converter dados base64 para buffer
     const buffer = Buffer.from(imageData.data, 'base64')
-    const contentType = imageData.mimeType || mime.lookup(imageData.filename) || 'application/octet-stream'
+    const contentType = getContentType(imageData.filename, imageData.mimeType)
 
     // Configurar headers
     const headers = new Headers()
