@@ -11,11 +11,17 @@ export function middleware(request: NextRequest) {
   response.headers.delete('X-Frame-Options')
   response.headers.delete('Referrer-Policy')
   response.headers.delete('X-XSS-Protection')
+  response.headers.delete('Cross-Origin-Embedder-Policy')
+  response.headers.delete('Cross-Origin-Opener-Policy')
+  response.headers.delete('Cross-Origin-Resource-Policy')
   
-  // Adicionar headers permissivos para desenvolvimento
+  // Adicionar headers permissivos para desenvolvimento e produção
   response.headers.set('Cross-Origin-Embedder-Policy', 'unsafe-none')
   response.headers.set('Cross-Origin-Opener-Policy', 'unsafe-none')
   response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin')
+  
+  // Remover qualquer header de CSP que possa estar sendo adicionado pelo Next.js
+  response.headers.set('Content-Security-Policy', '')
   
   console.log('✅ Middleware: Security headers removed for:', request.url)
   
