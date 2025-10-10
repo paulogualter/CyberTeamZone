@@ -99,8 +99,8 @@ export async function POST(request: NextRequest) {
     console.log('💾 Using database storage for images')
 
     try {
-      // Salvar no banco de dados Supabase
-      console.log('💾 Saving image to database...')
+      // Tentar salvar no banco de dados Supabase primeiro
+      console.log('💾 Attempting to save image to database...')
       
       const { data: imageData, error: insertError } = await supabaseAdmin
         .from('ImageStorage')
@@ -127,31 +127,22 @@ export async function POST(request: NextRequest) {
     } catch (dbError) {
       console.error('❌ Database operation failed:', dbError)
       
-      // Fallback para armazenamento local em desenvolvimento
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Falling back to local storage in development')
-        
-        try {
-          const uploadsDir = join(process.cwd(), 'public', 'uploads')
-          if (!existsSync(uploadsDir)) {
-            await mkdir(uploadsDir, { recursive: true })
-          }
-
-          const filepath = join(uploadsDir, secureFilename)
-          await writeFile(filepath, buffer)
-          fileUrl = `/uploads/${secureFilename}`
-          console.log('✅ Local file upload successful (fallback):', fileUrl)
-        } catch (localError) {
-          console.error('❌ Local file upload failed:', localError)
-          throw new Error('Failed to upload locally: ' + (localError instanceof Error ? localError.message : 'Unknown error'))
+      // Fallback para armazenamento local sempre (desenvolvimento e produção)
+      console.log('🔄 Falling back to local storage')
+      
+      try {
+        const uploadsDir = join(process.cwd(), 'public', 'uploads')
+        if (!existsSync(uploadsDir)) {
+          await mkdir(uploadsDir, { recursive: true })
         }
-      } else {
-        // Em produção, retornar erro
-        return NextResponse.json({
-          success: false,
-          error: 'Failed to save image to database',
-          details: dbError instanceof Error ? dbError.message : 'Unknown error'
-        }, { status: 500 })
+
+        const filepath = join(uploadsDir, secureFilename)
+        await writeFile(filepath, buffer)
+        fileUrl = `/uploads/${secureFilename}`
+        console.log('✅ Local file upload successful (fallback):', fileUrl)
+      } catch (localError) {
+        console.error('❌ Local file upload failed:', localError)
+        throw new Error('Failed to upload locally: ' + (localError instanceof Error ? localError.message : 'Unknown error'))
       }
     }
 
