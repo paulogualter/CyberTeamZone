@@ -3,13 +3,19 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// GET - Listar aulas de um módulo
+// GET - Listar aulas de um módulo (para admins)
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Verificar se é admin
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { searchParams } = new URL(req.url)
@@ -19,17 +25,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Module ID is required' }, { status: 400 })
     }
 
-    const { data: lessons, error: lessonsErr } = await supabaseAdmin
+    // Buscar aulas do módulo (admins podem ver todas)
+    const { data: lessons, error: lessonErr } = await supabaseAdmin
       .from('Lesson')
       .select(`
         *,
-        module:Module(id,title, course:Course(id,title))
+        module:Module(id, title, courseId, course:Course(id, title, instructorId, instructor:User(name, email)))
       `)
       .eq('moduleId', moduleId)
       .order('order', { ascending: true })
 
-    if (lessonsErr) {
-      console.error('Error fetching lessons:', lessonsErr)
+    if (lessonErr) {
+      console.error('Error fetching lessons:', lessonErr)
       return NextResponse.json({ error: 'Failed to fetch lessons' }, { status: 500 })
     }
 
@@ -43,35 +50,55 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST - Criar nova aula
+// POST - Criar nova aula (para admins)
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
-    const { 
-      title, 
-      content, 
-      type, 
-      duration, 
-      moduleId, 
-      order, 
-      isPublished,
-      videoUrl, 
-      attachment 
-    } = body
-
-    if (!title || !content || !type || !moduleId) {
-      return NextResponse.json({ 
-        error: 'Title, content, type, and moduleId are required' 
-      }, { status: 400 })
+    // Verificar se é admin
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Próxima ordem se não informado
+    const { 
+      title, 
+      description, 
+      content, 
+      videoUrl, 
+      duration, 
+      order, 
+      moduleId,
+      isPublished = false 
+    } = await req.json()
+
+    // Validação básica
+    if (!title || !moduleId) {
+      return NextResponse.json(
+        { error: 'Title and moduleId are required' },
+        { status: 400 }
+      )
+    }
+
+    // Verificar se o módulo existe
+    const { data: module, error: moduleErr } = await supabaseAdmin
+      .from('Module')
+      .select('id, courseId, course:Course(id, instructorId)')
+      .eq('id', moduleId)
+      .single()
+
+    if (moduleErr || !module) {
+      return NextResponse.json(
+        { error: 'Module not found' },
+        { status: 404 }
+      )
+    }
+
+    // Próxima ordem se não informada
     let lessonOrder = order as number | undefined
     if (!lessonOrder) {
       const { data: last, error: lastErr } = await supabaseAdmin
@@ -90,23 +117,23 @@ export async function POST(req: NextRequest) {
     const nowIso = new Date().toISOString()
     const lessonId = `lesson_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
 
+    // Criar aula
     const { data: created, error: createErr } = await supabaseAdmin
       .from('Lesson')
       .insert({
         id: lessonId,
         title,
-        content,
-        type,
-        duration: duration || null,
+        description: description || '',
+        content: content || '',
+        videoUrl: videoUrl || '',
+        duration: duration || 0,
         moduleId,
         order: lessonOrder,
-        isPublished: Boolean(isPublished) || false,
-        videoUrl: videoUrl || null,
-        attachment: attachment || null,
+        isPublished,
         createdAt: nowIso,
         updatedAt: nowIso
       })
-      .select('*, module:Module(id,title, course:Course(id,title))')
+      .select('*')
       .single()
 
     if (createErr) {
@@ -114,7 +141,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to create lesson' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, lesson: created })
+    return NextResponse.json({
+      success: true,
+      lesson: created
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creating lesson:', error)
     return NextResponse.json(

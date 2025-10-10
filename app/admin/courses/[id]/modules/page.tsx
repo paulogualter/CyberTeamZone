@@ -1,48 +1,52 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { 
-  PlusIcon, 
-  PencilIcon, 
-  TrashIcon, 
-  EyeIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
   PlayIcon,
-  BookOpenIcon,
+  DocumentTextIcon,
   ClockIcon,
-  ChevronRightIcon
+  ArrowLeftIcon,
+  BookOpenIcon,
+  UserIcon
 } from '@heroicons/react/24/outline'
 import { Module, Lesson } from '@/types'
 import toast from 'react-hot-toast'
-import Header from '@/components/Header'
-import ModuleModal from '@/components/admin/ModuleModal'
-import LessonModal from '@/components/admin/LessonModal'
 
-export default function CourseModulesPage() {
-  const { data: session, status } = useSession()
+export default function AdminModules() {
   const router = useRouter()
-  const params = useParams()
-  const courseId = params.id as string
-
+  const searchParams = useSearchParams()
+  const courseId = searchParams.get('courseId')
+  
+  const [course, setCourse] = useState<any>(null)
   const [modules, setModules] = useState<Module[]>([])
   const [loading, setLoading] = useState(true)
-  const [showModuleModal, setShowModuleModal] = useState(false)
-  const [showLessonModal, setShowLessonModal] = useState(false)
-  const [editingModule, setEditingModule] = useState<Module | null>(null)
-  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
-  const [selectedModule, setSelectedModule] = useState<Module | null>(null)
-  const [courseTitle, setCourseTitle] = useState('')
+  const [showCreateModuleModal, setShowCreateModuleModal] = useState(false)
 
   useEffect(() => {
-    if (status === 'loading') return
-    if (!session || session.user.role !== 'ADMIN') {
-      router.push('/dashboard')
-      return
+    if (courseId) {
+      fetchCourseData()
+      fetchModules()
     }
-    fetchModules()
-  }, [session, status, router, courseId])
+  }, [courseId])
+
+  const fetchCourseData = async () => {
+    try {
+      const response = await fetch(`/api/admin/courses/${courseId}`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setCourse(data.course)
+      }
+    } catch (error) {
+      console.error('Error fetching course:', error)
+      toast.error('Erro ao carregar dados do curso')
+    }
+  }
 
   const fetchModules = async () => {
     try {
@@ -51,10 +55,7 @@ export default function CourseModulesPage() {
       const data = await response.json()
       
       if (data.success) {
-        setModules(data.modules)
-        if (data.modules.length > 0) {
-          setCourseTitle(data.modules[0].course?.title || 'Curso')
-        }
+        setModules(data.modules || [])
       }
     } catch (error) {
       console.error('Error fetching modules:', error)
@@ -64,25 +65,18 @@ export default function CourseModulesPage() {
     }
   }
 
-  const handleCreateModule = () => {
-    setEditingModule(null)
-    setShowModuleModal(true)
-  }
-
-  const handleEditModule = (module: Module) => {
-    setEditingModule(module)
-    setShowModuleModal(true)
-  }
-
   const handleDeleteModule = async (moduleId: string) => {
-    if (!confirm('Tem certeza que deseja excluir este módulo? Todas as aulas serão excluídas também.')) return
+    if (!confirm('Tem certeza que deseja excluir este módulo? Todas as aulas serão excluídas também.')) {
+      return
+    }
 
     try {
       const response = await fetch(`/api/admin/modules/${moduleId}`, {
         method: 'DELETE',
       })
+
       const data = await response.json()
-      
+
       if (data.success) {
         toast.success('Módulo excluído com sucesso!')
         fetchModules()
@@ -95,308 +89,318 @@ export default function CourseModulesPage() {
     }
   }
 
-  const handleCreateLesson = (module: Module) => {
-    setSelectedModule(module)
-    setEditingLesson(null)
-    setShowLessonModal(true)
+  const handleModuleCreated = () => {
+    setShowCreateModuleModal(false)
+    fetchModules()
   }
 
-  const handleEditLesson = (lesson: Lesson) => {
-    // Find the module that contains this lesson
-    const module = modules.find(m => m.lessons?.some(l => l.id === lesson.id))
-    setSelectedModule(module || null)
-    setEditingLesson(lesson)
-    setShowLessonModal(true)
-  }
-
-  const handleDeleteLesson = async (lessonId: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta aula?')) return
-
-    try {
-      const response = await fetch(`/api/admin/lessons/${lessonId}`, {
-        method: 'DELETE',
-      })
-      const data = await response.json()
-      
-      if (data.success) {
-        toast.success('Aula excluída com sucesso!')
-        fetchModules()
-      } else {
-        toast.error(data.error || 'Erro ao excluir aula')
-      }
-    } catch (error) {
-      console.error('Error deleting lesson:', error)
-      toast.error('Erro ao excluir aula')
-    }
-  }
-
-  const getLessonTypeIcon = (type: string) => {
-    switch (type) {
-      case 'VIDEO':
-        return <PlayIcon className="h-4 w-4" />
-      case 'TEXT':
-        return <BookOpenIcon className="h-4 w-4" />
-      case 'QUIZ':
-        return <BookOpenIcon className="h-4 w-4" />
-      case 'PRACTICAL':
-        return <BookOpenIcon className="h-4 w-4" />
-      case 'CTF':
-        return <BookOpenIcon className="h-4 w-4" />
-      default:
-        return <BookOpenIcon className="h-4 w-4" />
-    }
-  }
-
-  const getLessonTypeColor = (type: string) => {
-    switch (type) {
-      case 'VIDEO':
-        return 'bg-red-100 text-red-800'
-      case 'TEXT':
-        return 'bg-blue-100 text-blue-800'
-      case 'QUIZ':
-        return 'bg-green-100 text-green-800'
-      case 'PRACTICAL':
-        return 'bg-purple-100 text-purple-800'
-      case 'CTF':
-        return 'bg-orange-100 text-orange-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  if (loading) {
+  if (!courseId) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">Carregando...</div>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">ID do Curso não fornecido</h1>
+          <button 
+            onClick={() => router.push('/admin/courses')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            Voltar para Cursos
+          </button>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-slate-900">
-      <Header />
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-white mb-2">
-                  Módulos e Aulas - {courseTitle}
-                </h1>
-                <p className="text-gray-400">
-                  Gerencie os módulos e aulas deste curso
-                </p>
-              </div>
+      {/* Page Header */}
+      <div className="bg-slate-800 border-b border-slate-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
               <button
-                onClick={handleCreateModule}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center space-x-2"
+                onClick={() => router.push('/admin/courses')}
+                className="text-gray-400 hover:text-white transition-colors"
               >
-                <PlusIcon className="h-5 w-5" />
-                <span>Novo Módulo</span>
+                <ArrowLeftIcon className="h-6 w-6" />
               </button>
-            </div>
-          </div>
-
-          {/* Modules List */}
-          <div className="space-y-6">
-            {modules.length > 0 ? (
-              modules.map((module, moduleIndex) => (
-                <motion.div
-                  key={module.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: moduleIndex * 0.1 }}
-                  className="bg-slate-800 rounded-xl overflow-hidden"
-                >
-                  {/* Module Header */}
-                  <div className="p-6 border-b border-slate-700">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          Módulo {module.order}
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold text-white">
-                            {module.title}
-                          </h3>
-                          {module.description && (
-                            <p className="text-gray-400 text-sm mt-1">
-                              {module.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          module.isPublished 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {module.isPublished ? 'Publicado' : 'Rascunho'}
-                        </span>
-                        <button
-                          onClick={() => handleEditModule(module)}
-                          className="p-2 text-gray-400 hover:text-white transition-colors"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteModule(module.id)}
-                          className="p-2 text-gray-400 hover:text-red-400 transition-colors"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Lessons List */}
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-lg font-medium text-white">
-                        Aulas ({module.lessons?.length || 0})
-                      </h4>
-                      <button
-                        onClick={() => handleCreateLesson(module)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 text-sm"
-                      >
-                        <PlusIcon className="h-4 w-4" />
-                        <span>Nova Aula</span>
-                      </button>
-                    </div>
-
-                    {module.lessons && module.lessons.length > 0 ? (
-                      <div className="space-y-3">
-                        {module.lessons.map((lesson, lessonIndex) => (
-                          <motion.div
-                            key={lesson.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: lessonIndex * 0.05 }}
-                            className="bg-slate-700 rounded-lg p-4 hover:bg-slate-650 transition-colors"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                <div className="bg-slate-600 text-white px-2 py-1 rounded text-sm font-medium">
-                                  {lesson.order}
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  {getLessonTypeIcon(lesson.type)}
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLessonTypeColor(lesson.type)}`}>
-                                    {lesson.type}
-                                  </span>
-                                </div>
-                                <div>
-                                  <h5 className="text-white font-medium">
-                                    {lesson.title}
-                                  </h5>
-                                  {lesson.duration && (
-                                    <div className="flex items-center space-x-1 text-gray-400 text-sm">
-                                      <ClockIcon className="h-3 w-3" />
-                                      <span>{lesson.duration} min</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  lesson.isPublished 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {lesson.isPublished ? 'Publicado' : 'Rascunho'}
-                                </span>
-                                <button
-                                  onClick={() => handleEditLesson(lesson)}
-                                  className="p-2 text-gray-400 hover:text-white transition-colors"
-                                >
-                                  <PencilIcon className="h-4 w-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteLesson(lesson.id)}
-                                  className="p-2 text-gray-400 hover:text-red-400 transition-colors"
-                                >
-                                  <TrashIcon className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <BookOpenIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-400 mb-4">
-                          Nenhuma aula cadastrada neste módulo
-                        </p>
-                        <button
-                          onClick={() => handleCreateLesson(module)}
-                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
-                        >
-                          Criar Primeira Aula
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              ))
-            ) : (
-              <div className="text-center py-12">
-                <BookOpenIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-300 mb-2">
-                  Nenhum módulo cadastrado
-                </h3>
-                <p className="text-gray-400 mb-6">
-                  Comece criando o primeiro módulo para este curso
+              <div>
+                <h1 className="text-2xl font-bold text-white">
+                  Módulos - {course?.title || 'Carregando...'}
+                </h1>
+                <p className="text-gray-300">
+                  Gerenciar módulos e aulas do curso
+                  {course?.instructor && (
+                    <span className="ml-2">
+                      • Instrutor: {course.instructor.name}
+                    </span>
+                  )}
                 </p>
-                <button
-                  onClick={handleCreateModule}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
-                >
-                  Criar Primeiro Módulo
-                </button>
               </div>
-            )}
+            </div>
+            <button 
+              onClick={() => setShowCreateModuleModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            >
+              <PlusIcon className="h-5 w-5" />
+              <span>Novo Módulo</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Module Modal */}
-      {showModuleModal && (
-        <ModuleModal
-          module={editingModule}
-          courseId={courseId}
-          onClose={() => {
-            setShowModuleModal(false)
-            setEditingModule(null)
-          }}
-          onSuccess={() => {
-            fetchModules()
-            setShowModuleModal(false)
-            setEditingModule(null)
-          }}
-        />
-      )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="text-gray-300 mt-4">Carregando módulos...</p>
+          </div>
+        ) : modules.length === 0 ? (
+          <div className="text-center py-12">
+            <DocumentTextIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-300 mb-2">
+              Nenhum módulo encontrado
+            </h3>
+            <p className="text-gray-400 mb-6">
+              Este curso ainda não possui módulos. Crie o primeiro módulo para começar.
+            </p>
+            <button 
+              onClick={() => setShowCreateModuleModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mx-auto"
+            >
+              <PlusIcon className="h-5 w-5" />
+              <span>Criar Primeiro Módulo</span>
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {modules.map((module, index) => (
+              <motion.div
+                key={module.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <BookOpenIcon className="h-6 w-6 text-blue-400" />
+                        <h3 className="text-xl font-semibold text-white">
+                          {module.title}
+                        </h3>
+                        <span className="px-2 py-1 bg-slate-700 text-gray-300 text-sm rounded">
+                          Ordem: {module.order}
+                        </span>
+                        {module.isPublished ? (
+                          <span className="px-2 py-1 bg-green-600 text-white text-sm rounded">
+                            Publicado
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 bg-yellow-600 text-white text-sm rounded">
+                            Rascunho
+                          </span>
+                        )}
+                      </div>
+                      {module.description && (
+                        <p className="text-gray-300 mb-4">{module.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => router.push(`/admin/courses/${courseId}/modules/${module.id}/lessons`)}
+                        className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition-colors"
+                      >
+                        <PlayIcon className="h-4 w-4 mr-1" />
+                        Gerenciar Aulas
+                      </button>
+                      <button
+                        onClick={() => {/* TODO: Edit module */}}
+                        className="flex items-center px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md text-sm transition-colors"
+                      >
+                        <PencilIcon className="h-4 w-4 mr-1" />
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDeleteModule(module.id)}
+                        className="flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm transition-colors"
+                      >
+                        <TrashIcon className="h-4 w-4 mr-1" />
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
 
-      {/* Lesson Modal */}
-      {showLessonModal && (
-        <LessonModal
-          lesson={editingLesson}
-          module={selectedModule}
-          onClose={() => {
-            setShowLessonModal(false)
-            setEditingLesson(null)
-            setSelectedModule(null)
-          }}
-          onSuccess={() => {
-            fetchModules()
-            setShowLessonModal(false)
-            setEditingLesson(null)
-            setSelectedModule(null)
-          }}
+                  {/* Lessons Preview */}
+                  {module.lessons && module.lessons.length > 0 && (
+                    <div className="border-t border-slate-700 pt-4">
+                      <h4 className="text-sm font-medium text-gray-300 mb-3">
+                        Aulas ({module.lessons.length})
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {module.lessons.slice(0, 3).map((lesson: any) => (
+                          <div key={lesson.id} className="bg-slate-700 rounded-lg p-3">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <PlayIcon className="h-4 w-4 text-blue-400" />
+                              <span className="text-sm font-medium text-white">
+                                {lesson.title}
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-4 text-xs text-gray-400">
+                              <div className="flex items-center space-x-1">
+                                <ClockIcon className="h-3 w-3" />
+                                <span>{lesson.duration || 0}min</span>
+                              </div>
+                              <span className={`px-2 py-1 rounded ${
+                                lesson.isPublished ? 'bg-green-600' : 'bg-yellow-600'
+                              } text-white`}>
+                                {lesson.isPublished ? 'Publicado' : 'Rascunho'}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                        {module.lessons.length > 3 && (
+                          <div className="bg-slate-700 rounded-lg p-3 flex items-center justify-center">
+                            <span className="text-sm text-gray-400">
+                              +{module.lessons.length - 3} mais aulas
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Create Module Modal */}
+      {showCreateModuleModal && (
+        <CreateModuleModal 
+          courseId={courseId}
+          onClose={() => setShowCreateModuleModal(false)}
+          onSuccess={handleModuleCreated}
         />
       )}
+    </div>
+  )
+}
+
+// Create Module Modal Component
+function CreateModuleModal({ 
+  courseId, 
+  onClose, 
+  onSuccess 
+}: { 
+  courseId: string
+  onClose: () => void
+  onSuccess: () => void 
+}) {
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    order: 1
+  })
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    try {
+      setLoading(true)
+      const response = await fetch('/api/admin/modules', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          courseId
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success('Módulo criado com sucesso!')
+        onSuccess()
+      } else {
+        toast.error(data.error || 'Erro ao criar módulo')
+      }
+    } catch (error) {
+      console.error('Error creating module:', error)
+      toast.error('Erro ao criar módulo')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-slate-800 rounded-lg p-6 w-full max-w-md mx-4">
+        <h2 className="text-xl font-bold text-white mb-4">Criar Novo Módulo</h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Título do Módulo
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Ex: Introdução à Cibersegurança"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Descrição
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={3}
+              placeholder="Descreva o que será abordado neste módulo..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Ordem
+            </label>
+            <input
+              type="number"
+              value={formData.order}
+              onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 1 })}
+              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              min="1"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Criando...' : 'Criar Módulo'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }

@@ -3,13 +3,19 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// GET - Listar módulos de um curso
+// GET - Listar módulos de um curso (para admins)
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Verificar se é admin
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { searchParams } = new URL(req.url)
@@ -19,17 +25,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Course ID is required' }, { status: 400 })
     }
 
-    // Buscar módulos com lições (ordenadas) e info mínima do curso
+    // Buscar módulos do curso (admins podem ver todos)
     const { data: modules, error: modErr } = await supabaseAdmin
       .from('Module')
       .select(`
         *,
         lessons:Lesson(*),
-        course:Course(id,title)
+        course:Course(id, title, instructorId, instructor:User(name, email))
       `)
       .eq('courseId', courseId)
       .order('order', { ascending: true })
-      .order('order', { ascending: true, foreignTable: 'Lesson' })
 
     if (modErr) {
       console.error('Error fetching modules:', modErr)
@@ -46,30 +51,43 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST - Criar novo módulo
+// POST - Criar novo módulo (para admins)
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
-    const { title, description, courseId, order, isPublished } = body
-
-    if (!title || !courseId) {
-      return NextResponse.json({ error: 'Title and courseId are required' }, { status: 400 })
+    // Verificar se é admin
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Verificar curso existente
+    const { title, description, order, courseId } = await req.json()
+
+    // Validação básica
+    if (!title || !courseId) {
+      return NextResponse.json(
+        { error: 'Title and courseId are required' },
+        { status: 400 }
+      )
+    }
+
+    // Verificar se o curso existe
     const { data: course, error: courseErr } = await supabaseAdmin
       .from('Course')
-      .select('id,title')
+      .select('id, instructorId')
       .eq('id', courseId)
       .single()
+
     if (courseErr || !course) {
-      return NextResponse.json({ error: 'Course not found' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Course not found' },
+        { status: 404 }
+      )
     }
 
     // Próxima ordem se não informada
@@ -91,6 +109,7 @@ export async function POST(req: NextRequest) {
     const nowIso = new Date().toISOString()
     const moduleId = `module_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
 
+    // Criar módulo
     const { data: created, error: createErr } = await supabaseAdmin
       .from('Module')
       .insert({
@@ -99,11 +118,11 @@ export async function POST(req: NextRequest) {
         description: description || '',
         courseId,
         order: moduleOrder,
-        isPublished: Boolean(isPublished) || false,
+        isPublished: false,
         createdAt: nowIso,
         updatedAt: nowIso
       })
-      .select('*, lessons:Lesson(*), course:Course(id,title)')
+      .select('*, lessons:Lesson(*)')
       .single()
 
     if (createErr) {
@@ -111,7 +130,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to create module' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, module: created })
+    return NextResponse.json({
+      success: true,
+      module: created
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creating module:', error)
     return NextResponse.json(
