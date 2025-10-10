@@ -52,7 +52,8 @@ const LocalImage: React.FC<LocalImageProps> = ({ filename, alt, width, height, c
         width={width}
         height={height}
         className={className}
-        {...props}
+        priority={priority}
+        style={{ objectFit: 'cover' }}
       />
     )
   }
@@ -74,7 +75,6 @@ const LocalImage: React.FC<LocalImageProps> = ({ filename, alt, width, height, c
         onLoad={handleImageLoad}
         priority={priority}
         style={{ objectFit: 'cover' }}
-        {...props}
       />
     </>
   )
