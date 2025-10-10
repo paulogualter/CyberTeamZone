@@ -1,93 +1,95 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import mime from 'mime-types'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { imageId: string } }
 ) {
+  const { imageId } = params
+  console.log(`🖼️ Attempting to serve image from database: ${imageId}`)
+
+  if (!imageId) {
+    return NextResponse.json({ error: 'Image ID is required' }, { status: 400 })
+  }
+
   try {
-    const imageId = params.imageId
-    
-    console.log('🖼️ Serving image from database:', imageId)
-    
     // Buscar a imagem no banco de dados
     const { data: imageData, error } = await supabaseAdmin
       .from('ImageStorage')
-      .select('*')
+      .select('data, mimeType, filename, originalName, size')
       .eq('id', imageId)
       .single()
 
     if (error) {
-      console.error('❌ Error fetching image from database:', error)
-      return new NextResponse('Image not found', { status: 404 })
+      console.error('❌ Database error:', error)
+      return NextResponse.json({ error: 'Image not found in database' }, { status: 404 })
     }
 
     if (!imageData) {
-      console.log('❌ Image not found in database:', imageId)
-      return new NextResponse('Image not found', { status: 404 })
+      console.log(`❌ Image not found for ID: ${imageId}`)
+      return NextResponse.json({ error: 'Image not found' }, { status: 404 })
     }
 
-    // Converter base64 de volta para buffer
-    const imageBuffer = Buffer.from(imageData.data, 'base64')
-    
-    console.log('✅ Image served from database:', {
-      id: imageData.id,
-      filename: imageData.filename,
-      mimeType: imageData.mimeType,
-      size: imageData.size,
-      bufferSize: imageBuffer.length
+    // Converter dados base64 para buffer
+    const buffer = Buffer.from(imageData.data, 'base64')
+    const contentType = imageData.mimeType || mime.lookup(imageData.filename) || 'application/octet-stream'
+
+    // Configurar headers
+    const headers = new Headers()
+    headers.set('Content-Type', contentType)
+    headers.set('Content-Length', buffer.length.toString())
+    headers.set('Cache-Control', 'public, max-age=31536000, immutable') // Cache por 1 ano
+    headers.set('Last-Modified', new Date().toUTCString())
+    headers.set('ETag', `"${imageId}"`)
+
+    console.log(`✅ Serving image from database: ${imageId} (${buffer.length} bytes, ${contentType})`)
+
+    return new NextResponse(buffer, { 
+      status: 200, 
+      headers 
     })
 
-    return new NextResponse(imageBuffer, {
-      status: 200,
-      headers: {
-        'Content-Type': imageData.mimeType,
-        'Content-Length': imageBuffer.length.toString(),
-        'Cache-Control': 'public, max-age=31536000, immutable',
-        'Content-Disposition': `inline; filename="${imageData.originalName}"`,
-      },
-    })
   } catch (error) {
-    console.error('❌ Error serving image:', error)
-    return new NextResponse('Internal Server Error', { status: 500 })
+    console.error('❌ Error serving image from database:', error)
+    return NextResponse.json({ 
+      error: 'Failed to retrieve image from database',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
 
-// DELETE endpoint para remover imagens
+// Método DELETE para remover imagens (opcional)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { imageId: string } }
 ) {
+  const { imageId } = params
+  console.log(`🗑️ Attempting to delete image: ${imageId}`)
+
+  if (!imageId) {
+    return NextResponse.json({ error: 'Image ID is required' }, { status: 400 })
+  }
+
   try {
-    const imageId = params.imageId
-    
-    console.log('🗑️ Deleting image from database:', imageId)
-    
-    // Deletar a imagem do banco de dados
     const { error } = await supabaseAdmin
       .from('ImageStorage')
       .delete()
       .eq('id', imageId)
 
     if (error) {
-      console.error('❌ Error deleting image from database:', error)
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Failed to delete image' 
-      }, { status: 500 })
+      console.error('❌ Database error:', error)
+      return NextResponse.json({ error: 'Failed to delete image' }, { status: 500 })
     }
 
-    console.log('✅ Image deleted from database:', imageId)
+    console.log(`✅ Image deleted: ${imageId}`)
+    return NextResponse.json({ success: true, message: 'Image deleted successfully' })
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Image deleted successfully' 
-    })
   } catch (error) {
     console.error('❌ Error deleting image:', error)
     return NextResponse.json({ 
-      success: false, 
-      error: 'Internal server error' 
+      error: 'Failed to delete image',
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
 }
