@@ -29,28 +29,48 @@ export default function CertificationsSection() {
         </div>
         
         {/* CISSP Logo */}
-        <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg border border-orange-500 hover:opacity-100 transition-opacity duration-300">
-          <span className="text-white font-bold text-sm">CISSP</span>
+        <div className="flex items-center justify-center w-24 h-16 bg-white rounded-lg border border-gray-300 hover:opacity-100 transition-opacity duration-300 p-2">
+          <img 
+            src="/images/certifications/cissp-real.svg" 
+            alt="CISSP - Certified Information Systems Security Professional" 
+            className="max-w-full max-h-full object-contain"
+          />
         </div>
         
         {/* CISM Logo */}
-        <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg border border-blue-500 hover:opacity-100 transition-opacity duration-300">
-          <span className="text-white font-bold text-sm">CISM</span>
+        <div className="flex items-center justify-center w-24 h-16 bg-white rounded-lg border border-gray-300 hover:opacity-100 transition-opacity duration-300 p-2">
+          <img 
+            src="/images/certifications/cism-real.svg" 
+            alt="CISM - Certified Information Security Manager" 
+            className="max-w-full max-h-full object-contain"
+          />
         </div>
         
         {/* Security+ Logo */}
-        <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-yellow-500 to-yellow-700 rounded-lg border border-yellow-400 hover:opacity-100 transition-opacity duration-300">
-          <span className="text-white font-bold text-xs">Security+</span>
+        <div className="flex items-center justify-center w-24 h-16 bg-white rounded-lg border border-gray-300 hover:opacity-100 transition-opacity duration-300 p-2">
+          <img 
+            src="/images/certifications/security-plus-real.svg" 
+            alt="Security+ - CompTIA Security+" 
+            className="max-w-full max-h-full object-contain"
+          />
         </div>
         
         {/* OSCP Logo */}
-        <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-red-600 to-red-800 rounded-lg border border-red-500 hover:opacity-100 transition-opacity duration-300">
-          <span className="text-white font-bold text-sm">OSCP</span>
+        <div className="flex items-center justify-center w-24 h-16 bg-white rounded-lg border border-gray-300 hover:opacity-100 transition-opacity duration-300 p-2">
+          <img 
+            src="/images/certifications/oscp-real.svg" 
+            alt="OSCP - Offensive Security Certified Professional" 
+            className="max-w-full max-h-full object-contain"
+          />
         </div>
         
         {/* CISA Logo */}
-        <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg border border-purple-500 hover:opacity-100 transition-opacity duration-300">
-          <span className="text-white font-bold text-sm">CISA</span>
+        <div className="flex items-center justify-center w-24 h-16 bg-white rounded-lg border border-gray-300 hover:opacity-100 transition-opacity duration-300 p-2">
+          <img 
+            src="/images/certifications/cisa-real.svg" 
+            alt="CISA - Certified Information Systems Auditor" 
+            className="max-w-full max-h-full object-contain"
+          />
         </div>
       </div>
     </motion.div>

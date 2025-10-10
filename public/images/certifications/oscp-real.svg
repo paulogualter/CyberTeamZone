@@ -1,0 +1,17 @@
+<svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo escuro -->
+  <rect width="120" height="80" fill="#1a1a1a" rx="4"/>
+  
+  <!-- Círculo externo vermelho -->
+  <circle cx="60" cy="40" r="35" fill="#d32f2f" stroke="#b71c1c" stroke-width="2"/>
+  
+  <!-- Círculo interno branco -->
+  <circle cx="60" cy="40" r="25" fill="#ffffff"/>
+  
+  <!-- Texto OSCP -->
+  <text x="60" y="45" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#d32f2f" text-anchor="middle">OSCP</text>
+  
+  <!-- Ícone de escudo -->
+  <path d="M60 20 L75 30 L75 50 L60 60 L45 50 L45 30 Z" fill="#d32f2f" stroke="#b71c1c" stroke-width="1"/>
+  <path d="M60 25 L70 32 L70 47 L60 54 L50 47 L50 32 Z" fill="#ffffff"/>
+</svg>

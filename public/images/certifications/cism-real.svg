@@ -1,0 +1,22 @@
+<svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo escuro -->
+  <rect width="120" height="80" fill="#1a1a1a" rx="4"/>
+  
+  <!-- Círculo externo verde -->
+  <circle cx="60" cy="40" r="35" fill="#2e7d32" stroke="#1b5e20" stroke-width="2"/>
+  
+  <!-- Círculo interno branco -->
+  <circle cx="60" cy="40" r="25" fill="#ffffff"/>
+  
+  <!-- Texto CISM -->
+  <text x="60" y="45" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#2e7d32" text-anchor="middle">CISM</text>
+  
+  <!-- C verde estilizado -->
+  <path d="M45 30 Q60 25 60 40 Q60 55 45 50" stroke="#2e7d32" stroke-width="3" fill="none"/>
+  
+  <!-- Ícone de documento no canto superior esquerdo -->
+  <rect x="30" y="15" width="8" height="10" fill="#2e7d32" stroke="#1b5e20" stroke-width="1"/>
+  <rect x="32" y="17" width="4" height="1" fill="#ffffff"/>
+  <rect x="32" y="19" width="4" height="1" fill="#ffffff"/>
+  <rect x="32" y="21" width="4" height="1" fill="#ffffff"/>
+</svg>
