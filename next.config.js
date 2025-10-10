@@ -30,29 +30,7 @@ const nextConfig = {
   },
   // Configuração de output para melhor cache
   generateEtags: false,
-  poweredByHeader: false,
-         // Headers de segurança DESABILITADOS temporariamente para resolver problemas
-         async headers() {
-           return [
-             {
-               source: '/(.*)',
-               headers: [
-                 {
-                   key: 'X-Frame-Options',
-                   value: 'DENY'
-                 },
-                 {
-                   key: 'X-Content-Type-Options',
-                   value: 'nosniff'
-                 },
-                 {
-                   key: 'Referrer-Policy',
-                   value: 'strict-origin-when-cross-origin'
-                 }
-               ]
-             }
-           ]
-         }
+  poweredByHeader: false
 }
 
 module.exports = nextConfig
