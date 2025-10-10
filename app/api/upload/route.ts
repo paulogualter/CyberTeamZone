@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,22 +42,24 @@ export async function POST(request: NextRequest) {
     const extension = file.name.split('.').pop() || 'jpg'
     const secureFilename = `img_${timestamp}_${randomId}.${extension}`
 
-    console.log('💾 Saving to Vercel Blob...')
+    console.log('💾 Processing image...')
 
-    // Salvar no Vercel Blob
-    const blob = await put(secureFilename, file, {
-      access: 'public',
-    })
+    // Converter para base64 para armazenar como string
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const base64Data = buffer.toString('base64')
+    const dataUrl = `data:${file.type};base64,${base64Data}`
 
-    console.log('✅ Image saved successfully:', blob.url)
+    console.log('✅ Image processed successfully:', secureFilename)
 
     return NextResponse.json({ 
       success: true, 
-      fileUrl: blob.url,
-      url: blob.url,
+      fileUrl: dataUrl,
+      url: dataUrl,
       filename: secureFilename,
       size: file.size,
-      type: file.type
+      type: file.type,
+      storage: 'base64'
     })
 
   } catch (error) {
