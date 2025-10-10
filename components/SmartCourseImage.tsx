@@ -36,8 +36,9 @@ const SmartCourseImage: React.FC<SmartCourseImageProps> = ({
       return
     }
 
-    // Se é um filename da pasta uploads, usar a API local
+    // Se é um filename da pasta uploads, tentar diferentes estratégias
     if (src && !src.startsWith('http') && !src.startsWith('/api/')) {
+      // Estratégia 1: Tentar API local primeiro
       setCurrentSrc(`/api/uploads/${src}`)
       return
     }
@@ -48,6 +49,24 @@ const SmartCourseImage: React.FC<SmartCourseImageProps> = ({
 
   const handleImageError = () => {
     console.log(`⚠️ Failed to load image: ${currentSrc}`)
+    
+    // Se falhou ao carregar via API local, tentar outras estratégias
+    if (currentSrc?.startsWith('/api/uploads/') && src && !src.startsWith('http') && !src.startsWith('/api/')) {
+      console.log(`🔄 Trying fallback strategies for: ${src}`)
+      
+      // Estratégia 2: Tentar acessar diretamente da pasta public (só funciona em dev)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 Trying direct public path: /uploads/${src}`)
+        setCurrentSrc(`/uploads/${src}`)
+        return
+      }
+      
+      // Estratégia 3: Tentar URL absoluta (para produção)
+      console.log(`🔄 Trying absolute URL: ${window.location.origin}/api/uploads/${src}`)
+      setCurrentSrc(`${window.location.origin}/api/uploads/${src}`)
+      return
+    }
+    
     setImageError(true)
     setImageLoading(false)
   }
@@ -58,9 +77,37 @@ const SmartCourseImage: React.FC<SmartCourseImageProps> = ({
   }
 
   if (!currentSrc || imageError) {
+    // Usar imagem do Unsplash como fallback
+    const fallbackImages = [
+      'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop'
+    ]
+    
+    // Usar hash do alt para escolher uma imagem consistente
+    const hash = alt.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0)
+      return a & a
+    }, 0)
+    const fallbackImage = fallbackImages[Math.abs(hash) % fallbackImages.length]
+    
     return (
-      <div className={`${className} flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600`}>
-        <div className="text-white text-6xl">{fallbackIcon}</div>
+      <div className="relative w-full h-full">
+        <Image
+          src={fallbackImage}
+          alt={`Fallback for ${alt}`}
+          fill
+          className={className}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority={false}
+          unoptimized={true}
+        />
+        {/* Overlay com ícone */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="text-white text-4xl opacity-80">{fallbackIcon}</div>
+        </div>
       </div>
     )
   }
