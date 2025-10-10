@@ -10,27 +10,27 @@ const nextConfig = {
     ],
   },
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Force resolution of paths
+    // Configuração mais simples para evitar problemas de chunk loading
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': require('path').resolve(__dirname, '.'),
-      '@/components': require('path').resolve(__dirname, './components'),
-      '@/lib': require('path').resolve(__dirname, './lib'),
-      '@/hooks': require('path').resolve(__dirname, './hooks'),
-      '@/types': require('path').resolve(__dirname, './types'),
     }
     
-    // Force resolution of extensions
-    config.resolve.extensions = ['.ts', '.tsx', '.js', '.jsx', '.json']
-    
-    // Force resolution of modules
-    config.resolve.modules = [
-      require('path').resolve(__dirname, '.'),
-      'node_modules'
-    ]
+    // Configuração para evitar problemas de self is not defined
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      }
+    }
     
     return config
   },
+  // Configuração de output para melhor cache
+  generateEtags: false,
+  poweredByHeader: false,
 }
 
 module.exports = nextConfig
