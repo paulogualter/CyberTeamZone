@@ -14,6 +14,7 @@ import {
   PuzzlePieceIcon,
   WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline'
+import SmartCourseImage from './SmartCourseImage'
 import { Course } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -51,23 +52,21 @@ export default function InstructorCourseCard({
       className="group relative rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors overflow-hidden border border-slate-700"
     >
       {/* Cover Image */}
-      {course.coverImage ? (
-        <div className="relative h-40 w-full bg-slate-900">
-          <img
-            src={course.coverImage}
-            alt={course.title}
-            className="h-40 w-full object-cover"
-          />
-          {/* Combined status badge */}
-          <div className="absolute top-2 right-2">
-            <span className="px-2 py-1 rounded-md text-xs font-medium bg-black/60 text-white border border-white/10">
-              {(course as any).status === 'ACTIVE' ? 'Ativo' : 'Inativo'}
-              {' '}
-              ({(course as any).approvalStatus === 'APPROVED' ? 'Aprovado' : (course as any).approvalStatus === 'REJECTED' ? 'Rejeitado' : 'Pendente'})
-            </span>
-          </div>
+      <div className="relative h-40 w-full bg-slate-900">
+        <SmartCourseImage
+          src={course.coverImage}
+          alt={course.title}
+          className="h-40 w-full object-cover"
+        />
+        {/* Combined status badge */}
+        <div className="absolute top-2 right-2">
+          <span className="px-2 py-1 rounded-md text-xs font-medium bg-black/60 text-white border border-white/10">
+            {(course as any).status === 'ACTIVE' ? 'Ativo' : 'Inativo'}
+            {' '}
+            ({(course as any).approvalStatus === 'APPROVED' ? 'Aprovado' : (course as any).approvalStatus === 'REJECTED' ? 'Rejeitado' : 'Pendente'})
+          </span>
         </div>
-      ) : null}
+      </div>
 
       <div className="p-6">
         <div className="flex items-start justify-between mb-4">

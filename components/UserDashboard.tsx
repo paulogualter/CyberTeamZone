@@ -12,6 +12,7 @@ import {
   StarIcon
 } from '@heroicons/react/24/outline'
 import CourseCard from './CourseCard'
+import SmartCourseImage from './SmartCourseImage'
 import { Course, UserProgress } from '@/types'
 import { useUserEscudos } from '@/hooks/useUserEscudos'
 
@@ -404,8 +405,8 @@ export default function UserDashboard() {
                       className="bg-slate-700/50 rounded-lg p-6 border border-gray-600"
                     >
                       <div className="mb-4">
-                        <img
-                          src={course.coverImage || '/images/default-course.jpg'}
+                        <SmartCourseImage
+                          src={course.coverImage}
                           alt={course.title}
                           className="w-full h-48 object-cover rounded-lg mb-4"
                         />

@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Course } from '@/types'
 import { StarIcon, ClockIcon, UserGroupIcon } from '@heroicons/react/24/solid'
-import DebugCourseImage from './DebugCourseImage'
+import SmartCourseImage from './SmartCourseImage'
 import { motion } from 'framer-motion'
 import CourseDetailModal from './CourseDetailModal'
 import CourseTypeBadge from './CourseTypeBadge'
@@ -108,7 +108,7 @@ export default function CourseCard({ course, onClick }: CourseCardProps) {
     >
       {/* Course Image */}
       <div className="relative h-48">
-        <DebugCourseImage
+        <SmartCourseImage
           src={course.coverImage}
           alt={course.title}
           className="w-full h-full object-cover"
