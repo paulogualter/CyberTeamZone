@@ -74,7 +74,8 @@ export async function GET(request: NextRequest) {
 
     if (where.categoryId) query = query.eq('categoryId', where.categoryId)
     if (search) query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,shortDescription.ilike.%${search}%`)
-    if (instructor) query = query.ilike('instructor.name', `%${instructor}%`)
+    // Note: instructor filtering would need to be done differently with Supabase
+    // For now, we'll skip instructor filtering in the query
 
     const { data: courses, error, count } = await query
     if (error) {

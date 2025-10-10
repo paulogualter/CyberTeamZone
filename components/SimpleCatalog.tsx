@@ -18,17 +18,23 @@ export default function SimpleCatalog() {
           const data = await response.json()
           
           if (data.categories && data.categories.length > 0) {
-            // Add "All Categories" option and transform API data
+            // Transform API data
+            const apiCategories = data.categories.map((category: any) => ({
+              id: category.id,
+              name: category.name,
+              description: category.description,
+              icon: category.icon || '📚',
+              color: category.color || '#6366f1',
+              courseCount: category.courseCount || 0
+            }))
+            
+            // Calculate total courses for "All Categories"
+            const totalCourses = apiCategories.reduce((sum, category) => sum + (category.courseCount || 0), 0)
+            
+            // Add "All Categories" option
             const transformedCategories = [
-              { id: 'all', name: 'All Categories', description: 'All available courses', icon: '🔍', color: '#6366f1', courseCount: 0 },
-              ...data.categories.map((category: any) => ({
-                id: category.id,
-                name: category.name,
-                description: category.description,
-                icon: category.icon || '📚',
-                color: category.color || '#6366f1',
-                courseCount: category.courseCount || 0
-              }))
+              { id: 'all', name: 'All Categories', description: 'All available courses', icon: '🔍', color: '#6366f1', courseCount: totalCourses },
+              ...apiCategories
             ]
             setCategories(transformedCategories)
           } else {

@@ -16,12 +16,13 @@ export async function GET() {
       throw error
     }
 
-    // Fetch public courses to compute counts (ACTIVE + isPublished)
+    // Fetch public courses to compute counts (ACTIVE + isPublished + APPROVED)
     const { data: courses, error: coursesErr } = await supabaseAdmin
       .from('Course')
-      .select('id, categoryId, status, isPublished')
+      .select('id, categoryId, status, isPublished, approvalStatus')
       .eq('status', 'ACTIVE')
       .eq('isPublished', true)
+      .eq('approvalStatus', 'APPROVED')
 
     if (coursesErr) {
       console.error('Supabase error (courses for category counts):', coursesErr)

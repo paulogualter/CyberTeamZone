@@ -119,8 +119,12 @@ export default function CourseCatalogWithPagination() {
           color: c.color || '#6366f1',
           courseCount: c.courseCount || 0
         }))
+        
+        // Calculate total courses for "All Categories"
+        const totalCourses = apiCategories.reduce((sum, category) => sum + (category.courseCount || 0), 0)
+        
         setCategories([
-          { id: 'all', name: 'All Categories', description: 'All available courses', icon: '🔍', color: '#6366f1', courseCount: 0 },
+          { id: 'all', name: 'All Categories', description: 'All available courses', icon: '🔍', color: '#6366f1', courseCount: totalCourses },
           ...apiCategories
         ])
         
