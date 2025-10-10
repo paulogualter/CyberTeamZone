@@ -20,8 +20,12 @@ export default function CertificationsSection() {
       
       <div className="flex flex-wrap justify-center items-center gap-6 opacity-80">
         {/* CEH Logo */}
-        <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-green-600 to-green-800 rounded-lg border border-green-500 hover:opacity-100 transition-opacity duration-300">
-          <span className="text-white font-bold text-sm">CEH</span>
+        <div className="flex items-center justify-center w-24 h-16 bg-white rounded-lg border border-gray-300 hover:opacity-100 transition-opacity duration-300 p-2">
+          <img 
+            src="/images/certifications/ceh-real.svg" 
+            alt="CEH - Certified Ethical Hacker" 
+            className="max-w-full max-h-full object-contain"
+          />
         </div>
         
         {/* CISSP Logo */}
