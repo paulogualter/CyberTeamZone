@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { put } from '@vercel/blob'
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,35 +37,25 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Converter para buffer
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
     // Gerar nome único
     const timestamp = Date.now()
     const randomId = Math.random().toString(36).substring(2, 15)
     const extension = file.name.split('.').pop() || 'jpg'
     const secureFilename = `img_${timestamp}_${randomId}.${extension}`
 
-    console.log('💾 Saving to local storage...')
+    console.log('💾 Saving to Vercel Blob...')
 
-    // Salvar na pasta public/uploads
-    const uploadsDir = join(process.cwd(), 'public', 'uploads')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
+    // Salvar no Vercel Blob
+    const blob = await put(secureFilename, file, {
+      access: 'public',
+    })
 
-    const filepath = join(uploadsDir, secureFilename)
-    await writeFile(filepath, buffer)
-
-    const fileUrl = `/api/uploads/${secureFilename}`
-    
-    console.log('✅ Image saved successfully:', secureFilename)
+    console.log('✅ Image saved successfully:', blob.url)
 
     return NextResponse.json({ 
       success: true, 
-      fileUrl,
-      url: fileUrl,
+      fileUrl: blob.url,
+      url: blob.url,
       filename: secureFilename,
       size: file.size,
       type: file.type
@@ -80,4 +68,4 @@ export async function POST(request: NextRequest) {
       error: 'Upload failed: ' + (error instanceof Error ? error.message : 'Unknown error')
     }, { status: 500 })
   }
-}// Force rebuild Fri Oct 10 07:07:12 -03 2025
+}
