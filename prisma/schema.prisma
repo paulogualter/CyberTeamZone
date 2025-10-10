@@ -77,6 +77,7 @@ model User {
   forumPostsLiked ForumPostLike[]
   forumCommentsLiked ForumCommentLike[]
   lessonRatings   LessonRating[]
+  uploadedImages  ImageStorage[]
 }
 
 model VerificationToken {
@@ -568,4 +569,19 @@ model PopupNotification {
 
   // Relations
   creator User @relation(fields: [createdBy], references: [id])
+}
+
+model ImageStorage {
+  id          String   @id @default(cuid())
+  filename    String   @unique
+  originalName String
+  mimeType    String
+  size        Int      // Size in bytes
+  data        Bytes    // Binary data
+  uploadedBy  String?  // User ID who uploaded
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  uploader User? @relation(fields: [uploadedBy], references: [id])
 }
