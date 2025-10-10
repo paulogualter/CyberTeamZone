@@ -80,4 +80,4 @@ export async function POST(request: NextRequest) {
       error: 'Upload failed: ' + (error instanceof Error ? error.message : 'Unknown error')
     }, { status: 500 })
   }
-}
+}// Force rebuild Fri Oct 10 07:07:12 -03 2025
