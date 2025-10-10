@@ -5,39 +5,12 @@ import { motion } from 'framer-motion'
 export default function StatsAndCertificationsSection() {
   return (
     <>
-      {/* Statistics Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-        className="mt-16 pt-8 pb-8 border-t border-gray-700 bg-slate-800/30 rounded-xl"
-      >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <div className="text-2xl font-bold text-blue-400 mb-1">500+</div>
-            <div className="text-sm text-gray-400">Active Students</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-blue-400 mb-1">50+</div>
-            <div className="text-sm text-gray-400">Available Courses</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-blue-400 mb-1">100+</div>
-            <div className="text-sm text-gray-400">CTFs Solved</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-blue-400 mb-1">95%</div>
-            <div className="text-sm text-gray-400">Satisfaction Rate</div>
-          </div>
-        </div>
-      </motion.div>
-
       {/* Certifications Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="mt-8 pt-8 pb-8 bg-blue-900/20 rounded-xl"
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="mt-16 pt-8 pb-8 bg-blue-900/20 rounded-xl"
       >
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-white mb-4">Recognized Certifications</h2>
@@ -100,6 +73,33 @@ export default function StatsAndCertificationsSection() {
               alt="CISA - Certified Information Systems Auditor" 
               className="max-w-full max-h-full object-contain"
             />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Statistics Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="mt-8 pt-8 pb-8 border-t border-gray-700 bg-slate-800/30 rounded-xl"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div>
+            <div className="text-2xl font-bold text-blue-400 mb-1">500+</div>
+            <div className="text-sm text-gray-400">Active Students</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-blue-400 mb-1">50+</div>
+            <div className="text-sm text-gray-400">Available Courses</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-blue-400 mb-1">100+</div>
+            <div className="text-sm text-gray-400">CTFs Solved</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-blue-400 mb-1">95%</div>
+            <div className="text-sm text-gray-400">Satisfaction Rate</div>
           </div>
         </div>
       </motion.div>
