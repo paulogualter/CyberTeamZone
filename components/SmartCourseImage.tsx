@@ -18,78 +18,25 @@ const SmartCourseImage: React.FC<SmartCourseImageProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
-  const [currentSrc, setCurrentSrc] = useState<string | null>(null)
 
   useEffect(() => {
     setImageLoading(true)
     setImageError(false)
-    
-    if (!src) {
-      setCurrentSrc(null)
-      setImageLoading(false)
-      return
-    }
-
-    // Se é uma URL da API de imagens do banco de dados
-    if (src.startsWith('/api/images/')) {
-      setCurrentSrc(src)
-      return
-    }
-
-    // Se é um filename da pasta uploads, tentar diferentes estratégias
-    if (src && !src.startsWith('http') && !src.startsWith('/api/')) {
-      // Se já tem prefixo /uploads/, remover e usar apenas o filename
-      let filename = src
-      if (src.startsWith('/uploads/')) {
-        filename = src.replace('/uploads/', '')
-      }
-      
-      // Estratégia 1: Tentar API local primeiro (só funciona se a imagem estiver deployada)
-      setCurrentSrc(`/api/uploads/${filename}`)
-      return
-    }
-
-    // Caso contrário, usar como está
-    setCurrentSrc(src)
   }, [src])
 
   const handleImageError = () => {
-    console.log(`⚠️ Failed to load image: ${currentSrc}`)
-    
-    // Se falhou ao carregar via API local, tentar outras estratégias
-    if (currentSrc?.startsWith('/api/uploads/') && src && !src.startsWith('http') && !src.startsWith('/api/')) {
-      console.log(`🔄 Trying fallback strategies for: ${src}`)
-      
-      // Extrair filename correto (remover prefixo /uploads/ se existir)
-      let filename = src
-      if (src.startsWith('/uploads/')) {
-        filename = src.replace('/uploads/', '')
-      }
-      
-      // Estratégia 2: Tentar acessar diretamente da pasta public (só funciona em dev)
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🔄 Trying direct public path: /uploads/${filename}`)
-        setCurrentSrc(`/uploads/${filename}`)
-        return
-      }
-      
-      // Estratégia 3: Tentar URL absoluta (para produção)
-      console.log(`🔄 Trying absolute URL: ${window.location.origin}/api/uploads/${filename}`)
-      setCurrentSrc(`${window.location.origin}/api/uploads/${filename}`)
-      return
-    }
-    
+    console.log(`⚠️ Failed to load image for: ${alt}`)
     setImageError(true)
     setImageLoading(false)
   }
 
   const handleImageLoad = () => {
-    console.log(`✅ Image loaded successfully: ${currentSrc}`)
+    console.log(`✅ Successfully loaded image for: ${alt}`)
     setImageLoading(false)
   }
 
-  if (!currentSrc || imageError) {
-    // Usar imagem do Unsplash como fallback
+  // Se não há src ou houve erro, mostrar fallback
+  if (!src || imageError) {
     const fallbackImages = [
       'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=300&fit=crop',
       'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
@@ -98,7 +45,6 @@ const SmartCourseImage: React.FC<SmartCourseImageProps> = ({
       'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop'
     ]
     
-    // Usar hash do alt para escolher uma imagem consistente
     const hash = alt.split('').reduce((a, b) => {
       a = ((a << 5) - a) + b.charCodeAt(0)
       return a & a
@@ -116,7 +62,6 @@ const SmartCourseImage: React.FC<SmartCourseImageProps> = ({
           priority={false}
           unoptimized={true}
         />
-        {/* Overlay com ícone */}
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
           <div className="text-white text-4xl opacity-80">{fallbackIcon}</div>
         </div>
@@ -124,15 +69,33 @@ const SmartCourseImage: React.FC<SmartCourseImageProps> = ({
     )
   }
 
+  // Se é uma data URL base64, usar tag img normal
+  if (src.startsWith('data:')) {
+    console.log(`🖼️ Rendering base64 image for: ${alt}`)
+    return (
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        style={{ 
+          objectFit: 'cover',
+          width: '100%',
+          height: '100%'
+        }}
+      />
+    )
+  }
+
+  // Para outras URLs, usar Next.js Image
   return (
     <div className="relative w-full h-full">
       {imageLoading && (
-        <div className={`absolute inset-0 ${className} flex items-center justify-center bg-gradient-to-br from-yellow-600 to-purple-600`}>
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-yellow-600 to-purple-600">
           <div className="text-white text-2xl">⏳</div>
         </div>
       )}
       <Image
-        src={currentSrc}
+        src={src}
         alt={alt}
         fill
         className={`${className} ${imageLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
