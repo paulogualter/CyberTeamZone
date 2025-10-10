@@ -264,10 +264,16 @@ export async function POST(req: NextRequest) {
     const now = new Date()
     const hashed = password ? await bcrypt.hash(password, 10) : null
 
+    // Gerar ID único para o usuário
+    const userId = `user_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+
+    console.log('🔍 Creating instructor user:', { name, email, userId })
+
     // Criar usuário como INSTRUCTOR (Supabase)
     const { data: createdRows, error: createErr } = await supabaseAdmin
       .from('User')
       .insert({
+        id: userId,
         email: email.toLowerCase().trim(),
         name: name?.trim() || null,
         password: hashed,
@@ -279,16 +285,27 @@ export async function POST(req: NextRequest) {
         updatedAt: now.toISOString(),
       })
       .select('id, name, email, role, isActive, escudos, subscriptionStatus, subscriptionPlan, createdAt, updatedAt')
+    
     if (createErr) {
-      return NextResponse.json({ error: 'Falha ao criar usuário' }, { status: 500 })
+      console.error('❌ Error creating user:', createErr)
+      return NextResponse.json({ 
+        error: 'Falha ao criar usuário', 
+        details: createErr.message 
+      }, { status: 500 })
     }
+    
     const createdUser = createdRows?.[0]
+    console.log('✅ User created successfully:', createdUser)
 
     // Criar registro na tabela Instructor
     try {
-      await supabaseAdmin
+      const instructorId = `instructor_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+      console.log('🔍 Creating instructor record:', { instructorId, email: createdUser.email })
+      
+      const { error: instructorErr } = await supabaseAdmin
         .from('Instructor')
         .insert({
+          id: instructorId,
           name: createdUser.name || 'Instrutor',
           email: createdUser.email,
           bio: 'Instrutor do CyberTeam',
@@ -296,10 +313,19 @@ export async function POST(req: NextRequest) {
           expertise: JSON.stringify(['Cibersegurança']),
           socialLinks: JSON.stringify({}),
           isActive: true,
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString(),
         })
+      
+      if (instructorErr) {
+        console.error('❌ Error creating instructor record:', instructorErr)
+        // Não bloquear a criação do usuário se falhar a sincronização de instrutor
+      } else {
+        console.log('✅ Instructor record created successfully')
+      }
     } catch (e) {
       // Não bloquear a criação do usuário se falhar a sincronização de instrutor
-      console.error('Erro ao criar registro de instrutor:', e)
+      console.error('❌ Exception creating instructor record:', e)
     }
 
     return NextResponse.json({ success: true, user: createdUser }, { status: 201 })

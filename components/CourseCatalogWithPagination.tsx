@@ -31,6 +31,12 @@ export default function CourseCatalogWithPagination() {
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [pagination, setPagination] = useState<PaginationData | null>(null)
+  const [itemsPerPage, setItemsPerPage] = useState(6)
+
+  // Reset to page 1 when items per page changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [itemsPerPage])
 
   // Fetch courses and categories from API
   useEffect(() => {
@@ -41,7 +47,7 @@ export default function CourseCatalogWithPagination() {
         // Build query parameters for pagination
         const params = new URLSearchParams({
           page: currentPage.toString(),
-          limit: '12'
+          limit: itemsPerPage.toString()
         })
         
         if (selectedCategory !== 'all') {
@@ -137,7 +143,7 @@ export default function CourseCatalogWithPagination() {
     }
 
     fetchData()
-  }, [currentPage, selectedCategory, searchQuery])
+  }, [currentPage, selectedCategory, searchQuery, itemsPerPage])
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -183,10 +189,33 @@ export default function CourseCatalogWithPagination() {
       {/* Main Content */}
       <div className="lg:w-3/4">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">Course Catalog</h1>
-          <p className="text-gray-300">
-            {pagination ? `Showing ${courses.length} of ${pagination.totalCount} courses` : `Showing ${courses.length} courses`}
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Course Catalog</h1>
+              <p className="text-gray-300">
+                {pagination ? `Showing ${courses.length} of ${pagination.totalCount} courses` : `Showing ${courses.length} courses`}
+              </p>
+            </div>
+            
+            {/* Items per page selector */}
+            <div className="flex items-center space-x-2 mt-4 sm:mt-0">
+              <label htmlFor="itemsPerPage" className="text-gray-300 text-sm">
+                Cursos por página:
+              </label>
+              <select
+                id="itemsPerPage"
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={6}>6</option>
+                <option value={12}>12</option>
+                <option value={24}>24</option>
+                <option value={48}>48</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Loading State */}
