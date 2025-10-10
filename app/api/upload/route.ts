@@ -98,37 +98,45 @@ export async function POST(request: NextRequest) {
     // Sempre usar banco de dados para armazenamento de imagens
     console.log('💾 Using database storage for images')
 
-    try {
-      // Tentar salvar no banco de dados Supabase primeiro
-      console.log('💾 Attempting to save image to database...')
+    // Em produção (Vercel), usar apenas armazenamento local via API
+    if (process.env.VERCEL) {
+      console.log('🌐 Production environment detected, using API storage')
       
-      const { data: imageData, error: insertError } = await supabaseAdmin
-        .from('ImageStorage')
-        .insert({
-          filename: secureFilename,
-          originalName: file.name,
-          mimeType: file.type,
-          size: file.size,
-          data: buffer.toString('base64'), // Convert to base64 for storage
-          uploadedBy: session?.user?.id || null
-        })
-        .select()
-        .single()
+      try {
+        // Tentar salvar no banco de dados Supabase primeiro
+        console.log('💾 Attempting to save image to database...')
+        
+        const { data: imageData, error: insertError } = await supabaseAdmin
+          .from('ImageStorage')
+          .insert({
+            filename: secureFilename,
+            originalName: file.name,
+            mimeType: file.type,
+            size: file.size,
+            data: buffer.toString('base64'), // Convert to base64 for storage
+            uploadedBy: session?.user?.id || null
+          })
+          .select()
+          .single()
 
-      if (insertError) {
-        console.error('❌ Database insert error:', insertError)
-        throw new Error('Failed to save image to database: ' + insertError.message)
+        if (insertError) {
+          console.error('❌ Database insert error:', insertError)
+          throw new Error('Failed to save image to database: ' + insertError.message)
+        }
+
+        imageId = imageData.id
+        fileUrl = `/api/images/${imageData.id}`
+        
+        console.log('✅ Image saved to database:', imageData.id)
+      } catch (dbError) {
+        console.error('❌ Database operation failed:', dbError)
+        
+        // Em produção, se o banco falhar, retornar erro
+        throw new Error('Production upload failed: ' + (dbError instanceof Error ? dbError.message : 'Unknown error'))
       }
-
-      imageId = imageData.id
-      fileUrl = `/api/images/${imageData.id}`
-      
-      console.log('✅ Image saved to database:', imageData.id)
-    } catch (dbError) {
-      console.error('❌ Database operation failed:', dbError)
-      
-      // Fallback para armazenamento local sempre (desenvolvimento e produção)
-      console.log('🔄 Falling back to local storage')
+    } else {
+      // Em desenvolvimento, usar armazenamento local
+      console.log('💻 Development environment detected, using local storage')
       
       try {
         const uploadsDir = join(process.cwd(), 'public', 'uploads')
@@ -139,7 +147,7 @@ export async function POST(request: NextRequest) {
         const filepath = join(uploadsDir, secureFilename)
         await writeFile(filepath, buffer)
         fileUrl = `/uploads/${secureFilename}`
-        console.log('✅ Local file upload successful (fallback):', fileUrl)
+        console.log('✅ Local file upload successful:', fileUrl)
       } catch (localError) {
         console.error('❌ Local file upload failed:', localError)
         throw new Error('Failed to upload locally: ' + (localError instanceof Error ? localError.message : 'Unknown error'))

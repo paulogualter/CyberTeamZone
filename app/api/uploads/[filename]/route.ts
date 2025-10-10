@@ -1,71 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readFile } from 'fs/promises'
+import { promises as fs } from 'fs'
 import { join } from 'path'
-import { existsSync } from 'fs'
+import mime from 'mime-types'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { filename: string } }
 ) {
+  const { filename } = params
+  console.log(`🖼️ Attempting to serve image: ${filename}`)
+
+  if (!filename) {
+    return NextResponse.json({ error: 'Filename is required' }, { status: 400 })
+  }
+
   try {
-    const filename = params.filename
-    
-    // Construir o caminho do arquivo
+    // Tentar servir do diretório local primeiro
     const filePath = join(process.cwd(), 'public', 'uploads', filename)
-    
-    // Verificar se o arquivo existe
-    if (!existsSync(filePath)) {
-      console.log('❌ File not found:', filePath)
-      return new NextResponse('File not found', { status: 404 })
+    console.log(`📁 Trying local path: ${filePath}`)
+
+    try {
+      const fileBuffer = await fs.readFile(filePath)
+      const contentType = mime.lookup(filename) || 'application/octet-stream'
+
+      const headers = new Headers()
+      headers.set('Content-Type', contentType)
+      headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+
+      console.log(`✅ Served local image: ${filename}`)
+      return new NextResponse(fileBuffer, { status: 200, headers })
+    } catch (localError: any) {
+      if (localError.code === 'ENOENT') {
+        console.log(`❌ Local file not found: ${filename}`)
+      } else {
+        console.error(`❌ Error reading local file:`, localError)
+      }
     }
+
+    // Se não encontrou localmente, retornar uma imagem placeholder
+    console.log(`🔄 Creating placeholder for missing image: ${filename}`)
     
-    // Ler o arquivo
-    const fileBuffer = await readFile(filePath)
-    
-    // Determinar o tipo de conteúdo baseado na extensão
-    const extension = filename.split('.').pop()?.toLowerCase()
-    let contentType = 'application/octet-stream'
-    
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        contentType = 'image/jpeg'
-        break
-      case 'png':
-        contentType = 'image/png'
-        break
-      case 'gif':
-        contentType = 'image/gif'
-        break
-      case 'webp':
-        contentType = 'image/webp'
-        break
-      case 'svg':
-        contentType = 'image/svg+xml'
-        break
-      case 'pdf':
-        contentType = 'application/pdf'
-        break
-      case 'mp4':
-        contentType = 'video/mp4'
-        break
-      case 'mp3':
-        contentType = 'audio/mpeg'
-        break
-    }
-    
-    console.log('✅ Serving file:', filename, 'Content-Type:', contentType)
-    
-    return new NextResponse(fileBuffer, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
-        'Content-Length': fileBuffer.length.toString(),
-      },
-    })
+    // Criar um SVG placeholder simples
+    const placeholderSvg = `
+      <svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100%" height="100%" fill="#374151"/>
+        <text x="50%" y="50%" text-anchor="middle" fill="#9CA3AF" font-family="Arial, sans-serif" font-size="14">
+          Image not found
+        </text>
+        <text x="50%" y="65%" text-anchor="middle" fill="#6B7280" font-family="Arial, sans-serif" font-size="10">
+          ${filename}
+        </text>
+      </svg>
+    `
+
+    const headers = new Headers()
+    headers.set('Content-Type', 'image/svg+xml')
+    headers.set('Cache-Control', 'public, max-age=300') // Cache por 5 minutos
+
+    return new NextResponse(placeholderSvg, { status: 200, headers })
+
   } catch (error) {
-    console.error('❌ Error serving file:', error)
-    return new NextResponse('Internal Server Error', { status: 500 })
+    console.error('❌ Error serving image:', error)
+    return NextResponse.json({ 
+      error: 'Failed to serve image',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
