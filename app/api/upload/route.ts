@@ -1,31 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
-import { validateFileUpload, generateSecureFilename, scanFileContent } from '@/lib/file-security'
-import { sanitizeInput } from '@/lib/validation'
+import { validateFileUpload, generateSecureFilename } from '@/lib/file-security'
 import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🚀 Upload API called')
+    console.log('🚀 Upload API called - Database only mode')
     
+    // Verificar autenticação
     let session = null
     try {
       session = await getServerSession(authOptions)
     } catch (authError) {
-      console.log('⚠️ Auth session error (continuing anyway):', authError instanceof Error ? authError.message : 'Unknown error')
-      // In production, assume user is authenticated if they're making the request
-      // This handles JWT corruption issues
+      console.log('⚠️ Auth session error:', authError instanceof Error ? authError.message : 'Unknown error')
+      // Em produção, assumir usuário autenticado se estiver fazendo a requisição
       if (process.env.NODE_ENV === 'production') {
-        console.log('🔄 Production JWT error detected, assuming authenticated user')
-        session = { user: { id: 'authenticated' } } // Mock session for production
+        session = { user: { id: 'authenticated' } }
       }
     }
     
-    // Allow unauthenticated uploads only in development to ease local testing
+    // Permitir uploads não autenticados apenas em desenvolvimento
     if (!session?.user && process.env.NODE_ENV !== 'development') {
       console.log('❌ Unauthorized upload attempt in production')
       return NextResponse.json({ 
@@ -35,7 +30,6 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.formData()
-    // Accept common field names: 'file' (preferred), 'image', and 'attachment'
     let file: File | null = data.get('file') as unknown as File
     if (!file) {
       file = data.get('image') as unknown as File
@@ -46,59 +40,47 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       console.log('❌ No file uploaded')
-      return NextResponse.json({ success: false, error: 'No file uploaded. Expected field name: file | image | attachment' }, { status: 400 })
+      return NextResponse.json({ 
+        success: false, 
+        error: 'No file uploaded. Expected field name: file | image | attachment' 
+      }, { status: 400 })
     }
 
     console.log('📁 File received:', {
       name: file.name,
       type: file.type,
-      size: file.size,
-      lastModified: file.lastModified
+      size: file.size
     })
 
-    // Validate file type and size
-    const category = file.type.startsWith('image/') ? 'images' : 
+    // Validar arquivo
+    const category = file.type.startsWith('image/') ? 'images' :
                    file.type.startsWith('video/') ? 'videos' : 'documents'
-    
+
     const validation = validateFileUpload(file, category)
     if (!validation.valid) {
       console.log('❌ File validation failed:', validation.error)
-      return NextResponse.json({ success: false, error: validation.error }, { status: 400 })
+      return NextResponse.json({ 
+        success: false, 
+        error: validation.error 
+      }, { status: 400 })
     }
-    
+
     console.log('✅ File validation passed')
 
-    // Content scanning apenas para arquivos de texto para reduzir falsos positivos
-    if (file.type.startsWith('text/')) {
-      const scanResult = await scanFileContent(file)
-      if (!scanResult.safe) {
-        return NextResponse.json({ 
-          success: false,
-          error: 'Arquivo contém conteúdo suspeito',
-          threats: scanResult.threats 
-        }, { status: 400 })
-      }
-    }
-
+    // Converter para buffer
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    
+
     console.log('📊 Buffer processing:', {
       bytesLength: bytes.byteLength,
       bufferLength: buffer.length,
       fileSize: file.size
     })
 
-    // Generate secure filename
+    // Gerar nome seguro
     const secureFilename = generateSecureFilename(file.name, session?.user?.id || 'anonymous')
 
-    let fileUrl: string
-    let imageId: string | null = null
-
-    // Sempre usar banco de dados para armazenamento de imagens
-    console.log('💾 Using database storage for images')
-
-    // SEMPRE usar banco de dados para armazenamento de imagens
+    // SALVAR APENAS NO BANCO DE DADOS
     console.log('💾 Saving image to database...')
     
     try {
@@ -117,59 +99,36 @@ export async function POST(request: NextRequest) {
 
       if (insertError) {
         console.error('❌ Database insert error:', insertError)
-        throw new Error('Failed to save image to database: ' + insertError.message)
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Failed to save image to database: ' + insertError.message 
+        }, { status: 500 })
       }
 
-      imageId = imageData.id
-      fileUrl = `/api/images/${imageData.id}`
+      const imageId = imageData.id
+      const fileUrl = `/api/images/${imageData.id}`
       
-      console.log('✅ Image saved to database:', imageData.id)
+      console.log('✅ Image saved to database successfully:', imageId)
+
+      return NextResponse.json({ 
+        success: true, 
+        fileUrl,
+        url: fileUrl, // For backward compatibility
+        imageId, // ID da imagem no banco de dados
+        filename: secureFilename,
+        size: file.size,
+        type: file.type,
+        storage: 'database'
+      })
+
     } catch (dbError) {
       console.error('❌ Database operation failed:', dbError)
-      
-      // Se o banco falhar, tentar fallback local apenas em desenvolvimento
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Development fallback: trying local storage')
-        
-        try {
-          const uploadsDir = join(process.cwd(), 'public', 'uploads')
-          if (!existsSync(uploadsDir)) {
-            await mkdir(uploadsDir, { recursive: true })
-          }
-
-          const filepath = join(uploadsDir, secureFilename)
-          await writeFile(filepath, buffer)
-          fileUrl = `/uploads/${secureFilename}`
-          console.log('✅ Local file upload successful (fallback):', fileUrl)
-        } catch (localError) {
-          console.error('❌ Local file upload failed:', localError)
-          throw new Error('Both database and local storage failed: ' + (localError instanceof Error ? localError.message : 'Unknown error'))
-        }
-      } else {
-        // Em produção, retornar erro se banco falhar
-        throw new Error('Database upload failed: ' + (dbError instanceof Error ? dbError.message : 'Unknown error'))
-      }
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Database upload failed: ' + (dbError instanceof Error ? dbError.message : 'Unknown error')
+      }, { status: 500 })
     }
 
-    console.log('✅ Upload successful:', {
-      fileUrl,
-      imageId,
-      filename: secureFilename,
-      size: file.size,
-      type: file.type,
-      storage: imageId ? 'database' : 'local'
-    })
-
-    return NextResponse.json({ 
-      success: true, 
-      fileUrl,
-      url: fileUrl, // For backward compatibility
-      imageId, // ID da imagem no banco de dados
-      filename: secureFilename,
-      size: file.size,
-      type: file.type,
-      storage: imageId ? 'database' : 'local'
-    })
   } catch (error) {
     console.error('❌ Error uploading file:', error)
     return NextResponse.json({ 
