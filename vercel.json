@@ -1,15 +1,5 @@
 {
   "framework": "nextjs",
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "functions": {
-    "app/api/**/*.ts": {
-      "runtime": "nodejs22.x"
-    }
-  },
-  "build": {
-    "env": {
-      "NODE_VERSION": "22"
-    }
-  }
+  "installCommand": "npm install"
 }
