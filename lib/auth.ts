@@ -6,6 +6,13 @@ import { supabaseAdmin } from './supabase'
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   providers: [
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? [
@@ -104,22 +111,23 @@ export const authOptions: NextAuthOptions = {
           return session
         },
     async jwt({ token, user, account }) {
-      console.log('🔍 Debug: JWT callback triggered')
-      console.log('📋 JWT data:', { hasUser: !!user, hasAccount: !!account, tokenKeys: Object.keys(token) })
-      
-      if (user) {
-        const u = user as any
-        token.id = u.id
-        token.role = u.role
-        token.escudos = u.escudos
-        token.subscriptionStatus = u.subscriptionStatus
-        token.subscriptionPlan = u.subscriptionPlan
-        console.log('✅ Token updated with user data:', { id: token.id, role: token.role, escudos: token.escudos })
+      try {
+        console.log('🔍 Debug: JWT callback triggered')
+        console.log('📋 JWT data:', { hasUser: !!user, hasAccount: !!account, tokenKeys: Object.keys(token) })
         
-        // Se é um login OAuth, salvar dados
-        if (account?.provider && ['google', 'apple', 'microsoft'].includes(account.provider)) {
-          console.log('🔍 Debug: OAuth login detected in JWT callback')
-          console.log('👤 User data:', { email: user.email, name: user.name })
+        if (user) {
+          const u = user as any
+          token.id = u.id
+          token.role = u.role
+          token.escudos = u.escudos
+          token.subscriptionStatus = u.subscriptionStatus
+          token.subscriptionPlan = u.subscriptionPlan
+          console.log('✅ Token updated with user data:', { id: token.id, role: token.role, escudos: token.escudos })
+          
+          // Se é um login OAuth, salvar dados
+          if (account?.provider && ['google', 'apple', 'microsoft'].includes(account.provider)) {
+            console.log('🔍 Debug: OAuth login detected in JWT callback')
+            console.log('👤 User data:', { email: user.email, name: user.name })
           console.log('🔑 Account data:', { provider: account.provider, type: account.type })
           
           try {
@@ -320,6 +328,16 @@ export const authOptions: NextAuthOptions = {
       
       console.log('📋 Final token data:', { id: token.id, role: token.role, escudos: token.escudos })
       return token
+      } catch (error) {
+        console.error('❌ JWT callback error:', error)
+        // Return a minimal token to prevent complete failure
+        return {
+          ...token,
+          id: token.id || 'anonymous',
+          role: token.role || 'STUDENT',
+          escudos: token.escudos || 0
+        }
+      }
     },
     async signIn({ user, account, profile }) {
       console.log('🔍 Debug: signIn callback triggered for provider:', account?.provider)
@@ -494,9 +512,6 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/auth/signin',
     error: '/auth/error',
-  },
-  session: {
-    strategy: 'jwt',
   },
   debug: process.env.NODE_ENV === 'development',
 }

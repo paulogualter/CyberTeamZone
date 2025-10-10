@@ -11,7 +11,13 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🚀 Upload API called')
     
-    const session = await getServerSession(authOptions)
+    let session = null
+    try {
+      session = await getServerSession(authOptions)
+    } catch (authError) {
+      console.log('⚠️ Auth session error (continuing anyway):', authError instanceof Error ? authError.message : 'Unknown error')
+      // Continue without session in development
+    }
     
     // Allow unauthenticated uploads only in development to ease local testing
     if (!session?.user && process.env.NODE_ENV !== 'development') {
