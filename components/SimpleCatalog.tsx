@@ -29,7 +29,7 @@ export default function SimpleCatalog() {
             }))
             
             // Calculate total courses for "All Categories"
-            const totalCourses = apiCategories.reduce((sum, category) => sum + (category.courseCount || 0), 0)
+            const totalCourses = apiCategories.reduce((sum: number, category: any) => sum + (category.courseCount || 0), 0)
             
             // Add "All Categories" option
             const transformedCategories = [
