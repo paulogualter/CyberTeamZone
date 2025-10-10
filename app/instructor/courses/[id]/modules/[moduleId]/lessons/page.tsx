@@ -52,11 +52,14 @@ export default function ModuleLessons() {
   const fetchLessons = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/instructor/lessons?moduleId=${moduleId}`)
+      const response = await fetch(`/api/lessons?moduleId=${moduleId}`)
       const data = await response.json()
       
       if (data.success) {
         setLessons(data.lessons || [])
+      } else {
+        console.error('Error fetching lessons:', data.error)
+        toast.error(data.error || 'Erro ao carregar aulas')
       }
     } catch (error) {
       console.error('Error fetching lessons:', error)
@@ -260,7 +263,7 @@ function CreateLessonModal({
     
     try {
       setLoading(true)
-      const response = await fetch('/api/instructor/lessons', {
+      const response = await fetch('/api/lessons', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

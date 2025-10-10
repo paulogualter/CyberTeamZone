@@ -51,11 +51,14 @@ export default function AdminModules() {
   const fetchModules = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/modules?courseId=${courseId}`)
+      const response = await fetch(`/api/modules?courseId=${courseId}`)
       const data = await response.json()
       
       if (data.success) {
         setModules(data.modules || [])
+      } else {
+        console.error('Error fetching modules:', data.error)
+        toast.error(data.error || 'Erro ao carregar módulos')
       }
     } catch (error) {
       console.error('Error fetching modules:', error)
@@ -310,7 +313,7 @@ function CreateModuleModal({
     
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/modules', {
+      const response = await fetch('/api/modules', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
