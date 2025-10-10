@@ -19,10 +19,21 @@ export async function POST(req: NextRequest) {
     }
 
     // Atualizar a notificação com o timestamp de exibição
-    await prisma.popupNotification.update({
-      where: { id: notificationId },
-      data: { lastShownAt: new Date() }
-    })
+    const { error: updateError } = await supabaseAdmin
+      .from('PopupNotification')
+      .update({ 
+        lastShownAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
+      .eq('id', notificationId)
+
+    if (updateError) {
+      console.error('Error updating notification:', updateError)
+      return NextResponse.json(
+        { error: 'Failed to update notification' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

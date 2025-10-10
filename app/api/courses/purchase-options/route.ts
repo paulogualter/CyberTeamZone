@@ -18,24 +18,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Get course details
-    const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        instructor: true,
-        category: true,
-      },
-    })
+    const { data: course, error: courseError } = await supabaseAdmin
+      .from('Course')
+      .select(`
+        *,
+        instructor:Instructor(*),
+        category:Category(*)
+      `)
+      .eq('id', courseId)
+      .single()
 
-    if (!course) {
+    if (courseError || !course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
     // Get user details
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    })
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('User')
+      .select('*')
+      .eq('id', session.user.id)
+      .single()
 
-    if (!user) {
+    if (userError || !user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
@@ -78,14 +82,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is already enrolled
-    const existingEnrollment = await prisma.enrollment.findUnique({
-      where: {
-        userId_courseId: {
-          userId: user.id,
-          courseId: course.id,
-        },
-      },
-    })
+    const { data: existingEnrollment, error: enrollmentError } = await supabaseAdmin
+      .from('Enrollment')
+      .select('*')
+      .eq('userId', user.id)
+      .eq('courseId', course.id)
+      .single()
 
     if (existingEnrollment) {
       return NextResponse.json({ 
