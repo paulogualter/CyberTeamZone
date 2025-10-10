@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
       .from('Lesson')
       .select(`
         *,
-        module:Module(id, title, courseId, course:Course(id, title, instructorId, instructor:User(name, email)))
+        module:Module(id, title, courseId, course:Course(id, title, instructorId))
       `)
       .eq('moduleId', moduleId)
       .order('order', { ascending: true })

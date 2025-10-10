@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
       .select(`
         *,
         lessons:Lesson(*),
-        course:Course(id, title, instructorId, instructor:User(name, email))
+        course:Course(id, title, instructorId)
       `)
       .eq('courseId', courseId)
       .order('order', { ascending: true })
