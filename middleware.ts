@@ -4,14 +4,20 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const response = NextResponse.next()
   
-  // Remover completamente todos os headers de CSP
+  // Remover completamente todos os headers de CSP e segurança
   response.headers.delete('Content-Security-Policy')
   response.headers.delete('Content-Security-Policy-Report-Only')
   response.headers.delete('X-Content-Type-Options')
   response.headers.delete('X-Frame-Options')
   response.headers.delete('Referrer-Policy')
+  response.headers.delete('X-XSS-Protection')
   
-  console.log('✅ Middleware: CSP headers removed for:', request.url)
+  // Adicionar headers permissivos para desenvolvimento
+  response.headers.set('Cross-Origin-Embedder-Policy', 'unsafe-none')
+  response.headers.set('Cross-Origin-Opener-Policy', 'unsafe-none')
+  response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin')
+  
+  console.log('✅ Middleware: Security headers removed for:', request.url)
   
   return response
 }
