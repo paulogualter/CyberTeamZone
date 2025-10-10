@@ -95,6 +95,14 @@ export async function POST(request: NextRequest) {
       fileUrl = `/uploads/${secureFilename}`
     }
 
+    console.log('✅ Upload successful:', {
+      fileUrl,
+      filename: secureFilename,
+      size: file.size,
+      type: file.type,
+      environment: process.env.VERCEL ? 'production' : 'development'
+    })
+
     return NextResponse.json({ 
       success: true, 
       fileUrl,
