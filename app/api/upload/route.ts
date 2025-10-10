@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
     console.log('📁 File received:', {
       name: file.name,
       type: file.type,
-      size: file.size
+      size: file.size,
+      lastModified: file.lastModified
     })
 
     // Validate file type and size
@@ -66,6 +67,12 @@ export async function POST(request: NextRequest) {
 
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
+    
+    console.log('📊 Buffer processing:', {
+      bytesLength: bytes.byteLength,
+      bufferLength: buffer.length,
+      fileSize: file.size
+    })
 
     // Generate secure filename
     const secureFilename = generateSecureFilename(file.name, session?.user?.id || 'anonymous')
