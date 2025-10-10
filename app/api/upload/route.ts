@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
+import { existsSync } from 'fs'
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🚀 Simple Upload API called')
+    console.log('🚀 Upload API called')
     
     const data = await request.formData()
     const file: File | null = data.get('file') as File || data.get('image') as File || data.get('attachment') as File
@@ -47,40 +49,25 @@ export async function POST(request: NextRequest) {
     const extension = file.name.split('.').pop() || 'jpg'
     const secureFilename = `img_${timestamp}_${randomId}.${extension}`
 
-    console.log('💾 Saving to database...')
+    console.log('💾 Saving to local storage...')
 
-    // Salvar no banco de dados
-    const { data: imageData, error: insertError } = await supabaseAdmin
-      .from('ImageStorage')
-      .insert({
-        filename: secureFilename,
-        originalName: file.name,
-        mimeType: file.type,
-        size: file.size,
-        data: buffer.toString('base64'),
-        uploadedBy: null // Permitir uploads anônimos temporariamente
-      })
-      .select()
-      .single()
-
-    if (insertError) {
-      console.error('❌ Database error:', insertError)
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Failed to save image: ' + insertError.message 
-      }, { status: 500 })
+    // Salvar na pasta public/uploads
+    const uploadsDir = join(process.cwd(), 'public', 'uploads')
+    if (!existsSync(uploadsDir)) {
+      await mkdir(uploadsDir, { recursive: true })
     }
 
-    const imageId = imageData.id
-    const fileUrl = `/api/images/${imageId}`
+    const filepath = join(uploadsDir, secureFilename)
+    await writeFile(filepath, buffer)
+
+    const fileUrl = `/api/uploads/${secureFilename}`
     
-    console.log('✅ Image saved successfully:', imageId)
+    console.log('✅ Image saved successfully:', secureFilename)
 
     return NextResponse.json({ 
       success: true, 
       fileUrl,
       url: fileUrl,
-      imageId,
       filename: secureFilename,
       size: file.size,
       type: file.type

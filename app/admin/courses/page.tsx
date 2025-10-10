@@ -574,11 +574,42 @@ function CourseModal({
     }
   }
 
+  // Garantir que a imagem selecionada seja enviada antes de salvar o curso
+  const uploadCoverIfNeeded = async (): Promise<string | null> => {
+    if (!selectedFile) return null
+    // Se o usuário selecionou um arquivo mas ainda não enviou manualmente,
+    // fazemos o upload automático aqui e retornamos a URL resultante
+    try {
+      const fd = new FormData()
+      fd.append('file', selectedFile)
+
+      const resp = await fetch('/api/upload', { method: 'POST', body: fd })
+      const json = await resp.json()
+      if (!resp.ok || !json?.success) {
+        throw new Error(json?.error || 'Falha ao enviar imagem')
+      }
+      return json.url || json.fileUrl || null
+    } catch (err) {
+      console.error('Auto-upload cover failed:', err)
+      toast.error('Erro ao enviar a imagem de capa')
+      return null
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
+      // Se existe um arquivo selecionado e a coverImage ainda não é uma URL válida de API/CDN,
+      // fazemos o upload automático antes de salvar.
+      if (selectedFile && (!formData.coverImage || formData.coverImage === previewUrl)) {
+        const uploadedUrl = await uploadCoverIfNeeded()
+        if (uploadedUrl) {
+          setFormData(prev => ({ ...prev, coverImage: uploadedUrl }))
+        }
+      }
+
       const url = course ? `/api/admin/courses/${course.id}` : '/api/admin/courses'
       const method = course ? 'PUT' : 'POST'
 
