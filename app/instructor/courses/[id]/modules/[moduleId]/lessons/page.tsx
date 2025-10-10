@@ -73,7 +73,7 @@ export default function ModuleLessons() {
     if (!confirm('Tem certeza que deseja excluir esta aula?')) return
 
     try {
-      const response = await fetch(`/api/instructor/lessons/${lessonId}`, {
+      const response = await fetch(`/api/lessons/${lessonId}`, {
         method: 'DELETE'
       })
 

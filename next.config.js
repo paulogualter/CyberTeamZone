@@ -31,7 +31,7 @@ const nextConfig = {
   // Configuração de output para melhor cache
   generateEtags: false,
   poweredByHeader: false,
-  // Desabilitar CSP completamente - versão mais agressiva
+  // Remover CSP completamente - versão mais agressiva
   async headers() {
     return [
       {
@@ -39,7 +39,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *; frame-src *; object-src *; media-src *; manifest-src *; worker-src *; child-src *; form-action *; base-uri *;"
+            value: ''
           },
           {
             key: 'Content-Security-Policy-Report-Only',
@@ -59,6 +59,18 @@ const nextConfig = {
           },
           {
             key: 'X-XSS-Protection',
+            value: ''
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: ''
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: ''
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
             value: ''
           }
         ],

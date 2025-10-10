@@ -71,7 +71,7 @@ export default function CourseModules() {
     if (!confirm('Tem certeza que deseja excluir este módulo?')) return
 
     try {
-      const response = await fetch(`/api/instructor/modules/${moduleId}`, {
+      const response = await fetch(`/api/modules/${moduleId}`, {
         method: 'DELETE'
       })
 
