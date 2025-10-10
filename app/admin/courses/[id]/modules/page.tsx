@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { 
   PlusIcon,
@@ -19,8 +19,8 @@ import toast from 'react-hot-toast'
 
 export default function AdminModules() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const courseId = searchParams.get('courseId')
+  const params = useParams()
+  const courseId = params.id as string
   
   const [course, setCourse] = useState<any>(null)
   const [modules, setModules] = useState<Module[]>([])
