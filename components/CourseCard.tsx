@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Course } from '@/types'
 import { StarIcon, ClockIcon, UserGroupIcon } from '@heroicons/react/24/solid'
+import CourseImage from './CourseImage'
 import { motion } from 'framer-motion'
 import CourseDetailModal from './CourseDetailModal'
 import CourseTypeBadge from './CourseTypeBadge'
@@ -106,22 +107,12 @@ export default function CourseCard({ course, onClick }: CourseCardProps) {
       }`}
     >
       {/* Course Image */}
-      <div className="relative h-48 bg-gradient-to-br from-blue-600 to-purple-600">
-        {course.coverImage ? (
-          <img
-            src={course.coverImage}
-            alt={course.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              console.log('Image load error for:', course.coverImage);
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="text-white text-6xl">🛡️</div>
-          </div>
-        )}
+      <div className="relative h-48">
+        <CourseImage
+          src={course.coverImage}
+          alt={course.title}
+          className="w-full h-full object-cover"
+        />
         
         {/* Difficulty Badge */}
         <div className="absolute top-3 right-3">

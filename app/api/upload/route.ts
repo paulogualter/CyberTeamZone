@@ -6,16 +6,10 @@ import { join } from 'path'
 import { existsSync } from 'fs'
 import { validateFileUpload, generateSecureFilename, scanFileContent, validateImageFile } from '@/lib/file-security'
 import { sanitizeInput } from '@/lib/validation'
+import { put } from '@/lib/blob'
 
 export async function POST(request: NextRequest) {
   try {
-    // Temporarily disable file uploads on Vercel (serverless environment)
-    if (process.env.VERCEL) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'File uploads are temporarily disabled on Vercel. Please use an external storage service like Vercel Blob, AWS S3, or Cloudinary.' 
-      }, { status: 503 })
-    }
 
     const session = await getServerSession(authOptions)
     
@@ -77,19 +71,29 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
     // Generate secure filename
     const secureFilename = generateSecureFilename(file.name, session?.user?.id || 'anonymous')
-    const filepath = join(uploadsDir, secureFilename)
 
-    await writeFile(filepath, buffer)
+    let fileUrl: string
 
-    const fileUrl = `/uploads/${secureFilename}`
+    if (process.env.VERCEL) {
+      // Use Vercel Blob for production
+      const blob = await put(secureFilename, buffer, {
+        access: 'public',
+        contentType: file.type,
+      })
+      fileUrl = blob.url
+    } else {
+      // Use local storage for development
+      const uploadsDir = join(process.cwd(), 'public', 'uploads')
+      if (!existsSync(uploadsDir)) {
+        await mkdir(uploadsDir, { recursive: true })
+      }
+
+      const filepath = join(uploadsDir, secureFilename)
+      await writeFile(filepath, buffer)
+      fileUrl = `/uploads/${secureFilename}`
+    }
 
     return NextResponse.json({ 
       success: true, 
