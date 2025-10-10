@@ -1,4 +1,5 @@
 import CourseCatalogWithPagination from '@/components/CourseCatalogWithPagination'
+import CertificationsSection from '@/components/CertificationsSection'
 import Header from '@/components/Header'
 
 export default function Home() {
@@ -7,6 +8,7 @@ export default function Home() {
       <Header />
       <main className="container mx-auto px-4 py-8">
         <CourseCatalogWithPagination />
+        <CertificationsSection />
       </main>
     </div>
   )
