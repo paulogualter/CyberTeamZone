@@ -30,3 +30,6 @@ public/uploads/
 
 # Ignore node_modules
 node_modules/
+
+# Node.js version specification
+.nvmrc
