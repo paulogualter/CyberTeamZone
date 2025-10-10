@@ -30,7 +30,41 @@ const nextConfig = {
   },
   // Configuração de output para melhor cache
   generateEtags: false,
-  poweredByHeader: false
+  poweredByHeader: false,
+  // Desabilitar CSP completamente
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: ''
+          },
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: ''
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: ''
+          },
+          {
+            key: 'X-Frame-Options',
+            value: ''
+          },
+          {
+            key: 'Referrer-Policy',
+            value: ''
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: ''
+          }
+        ],
+      },
+    ]
+  }
 }
 
 module.exports = nextConfig
