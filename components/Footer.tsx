@@ -198,13 +198,37 @@ export default function Footer() {
             </p>
           </div>
           
-          <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
-            <div className="text-gray-400 text-sm font-medium">CEH</div>
-            <div className="text-gray-400 text-sm font-medium">CISSP</div>
-            <div className="text-gray-400 text-sm font-medium">CISM</div>
-            <div className="text-gray-400 text-sm font-medium">Security+</div>
-            <div className="text-gray-400 text-sm font-medium">OSCP</div>
-            <div className="text-gray-400 text-sm font-medium">CISA</div>
+          <div className="flex flex-wrap justify-center items-center gap-8 opacity-80">
+            <img 
+              src="/images/certifications/ceh.svg" 
+              alt="CEH - Certified Ethical Hacker" 
+              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
+            />
+            <img 
+              src="/images/certifications/cissp.svg" 
+              alt="CISSP - Certified Information Systems Security Professional" 
+              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
+            />
+            <img 
+              src="/images/certifications/cism.svg" 
+              alt="CISM - Certified Information Security Manager" 
+              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
+            />
+            <img 
+              src="/images/certifications/security-plus.svg" 
+              alt="Security+ - CompTIA Security+" 
+              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
+            />
+            <img 
+              src="/images/certifications/oscp.svg" 
+              alt="OSCP - Offensive Security Certified Professional" 
+              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
+            />
+            <img 
+              src="/images/certifications/cisa.svg" 
+              alt="CISA - Certified Information Systems Auditor" 
+              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
+            />
           </div>
         </motion.div>
 
