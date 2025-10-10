@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ 
           success: false, 
           error: 'Failed to upload to Vercel Blob. Please check BLOB_READ_WRITE_TOKEN configuration.',
-          details: blobError.message
+          details: blobError instanceof Error ? blobError.message : 'Unknown error'
         }, { status: 500 })
       }
     } else {
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
         console.log('✅ Local file upload successful:', fileUrl)
       } catch (localError) {
         console.error('❌ Local file upload failed:', localError)
-        throw new Error('Failed to upload locally: ' + localError.message)
+        throw new Error('Failed to upload locally: ' + (localError instanceof Error ? localError.message : 'Unknown error'))
       }
     }
 
