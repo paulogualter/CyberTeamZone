@@ -198,37 +198,36 @@ export default function Footer() {
             </p>
           </div>
           
-          <div className="flex flex-wrap justify-center items-center gap-8 opacity-80">
-            <img 
-              src="/images/certifications/ceh.svg" 
-              alt="CEH - Certified Ethical Hacker" 
-              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
-            />
-            <img 
-              src="/images/certifications/cissp.svg" 
-              alt="CISSP - Certified Information Systems Security Professional" 
-              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
-            />
-            <img 
-              src="/images/certifications/cism.svg" 
-              alt="CISM - Certified Information Security Manager" 
-              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
-            />
-            <img 
-              src="/images/certifications/security-plus.svg" 
-              alt="Security+ - CompTIA Security+" 
-              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
-            />
-            <img 
-              src="/images/certifications/oscp.svg" 
-              alt="OSCP - Offensive Security Certified Professional" 
-              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
-            />
-            <img 
-              src="/images/certifications/cisa.svg" 
-              alt="CISA - Certified Information Systems Auditor" 
-              className="h-8 w-auto hover:opacity-100 transition-opacity duration-300"
-            />
+          <div className="flex flex-wrap justify-center items-center gap-6 opacity-80">
+            {/* CEH Logo */}
+            <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-green-600 to-green-800 rounded-lg border border-green-500 hover:opacity-100 transition-opacity duration-300">
+              <span className="text-white font-bold text-sm">CEH</span>
+            </div>
+            
+            {/* CISSP Logo */}
+            <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg border border-orange-500 hover:opacity-100 transition-opacity duration-300">
+              <span className="text-white font-bold text-sm">CISSP</span>
+            </div>
+            
+            {/* CISM Logo */}
+            <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg border border-blue-500 hover:opacity-100 transition-opacity duration-300">
+              <span className="text-white font-bold text-sm">CISM</span>
+            </div>
+            
+            {/* Security+ Logo */}
+            <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-yellow-500 to-yellow-700 rounded-lg border border-yellow-400 hover:opacity-100 transition-opacity duration-300">
+              <span className="text-white font-bold text-xs">Security+</span>
+            </div>
+            
+            {/* OSCP Logo */}
+            <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-red-600 to-red-800 rounded-lg border border-red-500 hover:opacity-100 transition-opacity duration-300">
+              <span className="text-white font-bold text-sm">OSCP</span>
+            </div>
+            
+            {/* CISA Logo */}
+            <div className="flex items-center justify-center w-20 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg border border-purple-500 hover:opacity-100 transition-opacity duration-300">
+              <span className="text-white font-bold text-sm">CISA</span>
+            </div>
           </div>
         </motion.div>
 
