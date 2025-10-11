@@ -29,12 +29,7 @@ export async function GET(req: NextRequest) {
         title,
         description,
         approvalStatus,
-        instructor:User(
-          id,
-          name,
-          bio,
-          avatar
-        ),
+        instructorId,
         modules:Module(
           id,
           title,
