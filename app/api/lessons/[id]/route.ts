@@ -36,18 +36,40 @@ export async function DELETE(
 
     // Se for instrutor, verificar se a aula pertence a um módulo de um curso dele
     if (userRole === 'INSTRUCTOR') {
+      // Primeiro, buscar a aula e seu módulo
       const { data: lesson, error: lessonErr } = await supabaseAdmin
         .from('Lesson')
-        .select(`
-          id,
-          module:Module(id, course:Course(id, instructorId))
-        `)
+        .select('id, moduleId')
         .eq('id', lessonId)
         .single()
 
-      if (lessonErr || !lesson || !lesson.module || !lesson.module.course || lesson.module.course.instructorId !== session.user.id) {
-        console.log('❌ Lesson not found or access denied for instructor:', lessonErr?.message)
-        return NextResponse.json({ error: 'Lesson not found or access denied' }, { status: 404 })
+      if (lessonErr || !lesson) {
+        console.log('❌ Lesson not found:', lessonErr?.message)
+        return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
+      }
+
+      // Depois, buscar o módulo e verificar o curso
+      const { data: module, error: moduleErr } = await supabaseAdmin
+        .from('Module')
+        .select('id, courseId')
+        .eq('id', lesson.moduleId)
+        .single()
+
+      if (moduleErr || !module) {
+        console.log('❌ Module not found:', moduleErr?.message)
+        return NextResponse.json({ error: 'Module not found' }, { status: 404 })
+      }
+
+      // Finalmente, verificar se o curso pertence ao instrutor
+      const { data: course, error: courseErr } = await supabaseAdmin
+        .from('Course')
+        .select('id, instructorId')
+        .eq('id', module.courseId)
+        .single()
+
+      if (courseErr || !course || course.instructorId !== session.user.id) {
+        console.log('❌ Course not found or access denied for instructor:', courseErr?.message)
+        return NextResponse.json({ error: 'Course not found or access denied' }, { status: 404 })
       }
     }
 

@@ -36,18 +36,28 @@ export async function DELETE(
 
     // Se for instrutor, verificar se o módulo pertence a um curso dele
     if (userRole === 'INSTRUCTOR') {
+      // Primeiro, buscar o módulo
       const { data: module, error: moduleErr } = await supabaseAdmin
         .from('Module')
-        .select(`
-          id,
-          course:Course(id, instructorId)
-        `)
+        .select('id, courseId')
         .eq('id', moduleId)
         .single()
 
-      if (moduleErr || !module || !module.course || module.course.instructorId !== session.user.id) {
-        console.log('❌ Module not found or access denied for instructor:', moduleErr?.message)
-        return NextResponse.json({ error: 'Module not found or access denied' }, { status: 404 })
+      if (moduleErr || !module) {
+        console.log('❌ Module not found:', moduleErr?.message)
+        return NextResponse.json({ error: 'Module not found' }, { status: 404 })
+      }
+
+      // Depois, verificar se o curso pertence ao instrutor
+      const { data: course, error: courseErr } = await supabaseAdmin
+        .from('Course')
+        .select('id, instructorId')
+        .eq('id', module.courseId)
+        .single()
+
+      if (courseErr || !course || course.instructorId !== session.user.id) {
+        console.log('❌ Course not found or access denied for instructor:', courseErr?.message)
+        return NextResponse.json({ error: 'Course not found or access denied' }, { status: 404 })
       }
     }
 
