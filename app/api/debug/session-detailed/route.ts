@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
     // Verificar módulos do curso
     const { data: modules, error: modulesErr } = await supabaseAdmin
       .from('Module')
-      .select('id, title, courseId, instructorId')
+      .select('id, title, courseId')
       .eq('courseId', courseId)
 
     console.log('📚 Modules data:', { modules: modules?.length || 0, error: modulesErr?.message })
