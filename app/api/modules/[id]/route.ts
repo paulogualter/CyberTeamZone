@@ -45,7 +45,7 @@ export async function DELETE(
         .eq('id', moduleId)
         .single()
 
-      if (moduleErr || !module || module.course.instructorId !== session.user.id) {
+      if (moduleErr || !module || !module.course || module.course.instructorId !== session.user.id) {
         console.log('❌ Module not found or access denied for instructor:', moduleErr?.message)
         return NextResponse.json({ error: 'Module not found or access denied' }, { status: 404 })
       }
