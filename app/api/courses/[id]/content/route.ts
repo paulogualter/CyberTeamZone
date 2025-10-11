@@ -72,21 +72,23 @@ export async function GET(
       lessons: module.lessons?.filter(lesson => lesson.isPublished) || []
     })) || []
 
-    // Verificar se o usuário está matriculado no curso
-    const { data: enrollment, error: enrollmentErr } = await supabaseAdmin
-      .from('UserCourseEnrollment')
-      .select('id')
-      .eq('userId', session.user.id)
-      .eq('courseId', courseId)
-      .single()
+    // Verificar se o usuário está matriculado no curso (exceto para admins)
+    if (session.user.role !== 'ADMIN') {
+      const { data: enrollment, error: enrollmentErr } = await supabaseAdmin
+        .from('UserCourseEnrollment')
+        .select('id')
+        .eq('userId', session.user.id)
+        .eq('courseId', courseId)
+        .single()
 
-    if (enrollmentErr && enrollmentErr.code !== 'PGRST116') {
-      console.error('Error checking enrollment:', enrollmentErr)
-      return NextResponse.json({ error: 'Failed to check enrollment' }, { status: 500 })
-    }
+      if (enrollmentErr && enrollmentErr.code !== 'PGRST116') {
+        console.error('Error checking enrollment:', enrollmentErr)
+        return NextResponse.json({ error: 'Failed to check enrollment' }, { status: 500 })
+      }
 
-    if (!enrollment) {
-      return NextResponse.json({ error: 'User not enrolled in this course' }, { status: 403 })
+      if (!enrollment) {
+        return NextResponse.json({ error: 'User not enrolled in this course' }, { status: 403 })
+      }
     }
 
     return NextResponse.json({
