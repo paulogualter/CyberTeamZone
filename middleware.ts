@@ -30,8 +30,8 @@ export function middleware(request: NextRequest) {
     "connect-src *; " +
     "media-src * data: blob:; " +
     "object-src *; " +
-    "child-src *; " +
-    "frame-src *; " +
+    "child-src * data: blob:; " +
+    "frame-src * data: blob:; " +
     "worker-src *; " +
     "frame-ancestors *; " +
     "form-action *; " +

@@ -93,7 +93,7 @@ export default function MemberLessonViewer() {
                 id: lessonId,
                 title: 'Aula de Teste',
                 content: '<p>Esta é uma aula de teste com conteúdo HTML.</p>',
-                videoUrl: 'data:video/mp4;base64,test-video-data',
+                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
                 duration: 30,
                 order: 1,
                 type: 'VIDEO',
