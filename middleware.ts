@@ -23,7 +23,7 @@ export function middleware(request: NextRequest) {
   // Definir CSP completamente permissivo - versão ultra-agressiva
   response.headers.set('Content-Security-Policy', 
     "default-src * 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes' data: blob:; " +
-    "script-src * 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes' 'unsafe-dynamic'; " +
+    "script-src * 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes'; " +
     "style-src * 'unsafe-inline' 'unsafe-hashes'; " +
     "img-src * data: blob:; " +
     "font-src * data:; " +
