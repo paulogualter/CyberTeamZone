@@ -39,7 +39,7 @@ export default function AdminMemberView() {
       
       console.log('🔍 Fetching course content for admin member view:', params.id)
       
-      const response = await fetch(`/api/admin/courses/${params.id}/member-view`)
+      const response = await fetch(`/api/admin/courses/${params.id}/content`)
       const data = await response.json()
       
       console.log('📊 Response data:', data)
