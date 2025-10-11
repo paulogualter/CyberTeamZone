@@ -28,10 +28,7 @@ export async function GET(req: NextRequest) {
     // Buscar aulas do módulo (admins podem ver todas)
     const { data: lessons, error: lessonErr } = await supabaseAdmin
       .from('Lesson')
-      .select(`
-        *,
-        module:Module(id, title, courseId, course:Course(id, title, instructorId, instructor:User(name, email)))
-      `)
+      .select('*')
       .eq('moduleId', moduleId)
       .order('order', { ascending: true })
 
@@ -84,16 +81,30 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Verificar se o módulo existe
+    // Verificar se o módulo existe usando queries separadas
     const { data: module, error: moduleErr } = await supabaseAdmin
       .from('Module')
-      .select('id, courseId, course:Course(id, instructorId)')
+      .select('id, courseId')
       .eq('id', moduleId)
       .single()
 
     if (moduleErr || !module) {
       return NextResponse.json(
         { error: 'Module not found' },
+        { status: 404 }
+      )
+    }
+
+    // Buscar dados do curso separadamente
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from('Course')
+      .select('id, instructorId')
+      .eq('id', module.courseId)
+      .single()
+
+    if (courseErr || !course) {
+      return NextResponse.json(
+        { error: 'Course not found' },
         { status: 404 }
       )
     }
