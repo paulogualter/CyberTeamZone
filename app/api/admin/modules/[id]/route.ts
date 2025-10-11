@@ -33,14 +33,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     console.log('🔗 Fetching module from Supabase...')
     
-    // Buscar módulo específico
+    // Buscar módulo específico usando queries separadas
     const { data: module, error: moduleErr } = await supabaseAdmin
       .from('Module')
-      .select(`
-        *,
-        lessons:Lesson(*),
-        course:Course(id, title, instructorId, instructor:User(name, email))
-      `)
+      .select('*')
       .eq('id', moduleId)
       .single()
 
@@ -59,14 +55,63 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Module not found' }, { status: 404 })
     }
 
+    // Buscar aulas do módulo separadamente
+    const { data: lessons, error: lessonsErr } = await supabaseAdmin
+      .from('Lesson')
+      .select('*')
+      .eq('moduleId', moduleId)
+      .order('order', { ascending: true })
+
+    if (lessonsErr) {
+      console.warn('⚠️ Error fetching lessons:', lessonsErr)
+    }
+
+    // Buscar dados do curso separadamente
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from('Course')
+      .select('id, title, instructorId')
+      .eq('id', module.courseId)
+      .single()
+
+    if (courseErr) {
+      console.warn('⚠️ Error fetching course:', courseErr)
+    }
+
+    // Buscar dados do instrutor separadamente
+    let instructor = null
+    if (course?.instructorId) {
+      const { data: instructorData, error: instructorErr } = await supabaseAdmin
+        .from('User')
+        .select('name, email')
+        .eq('id', course.instructorId)
+        .single()
+
+      if (instructorErr) {
+        console.warn('⚠️ Error fetching instructor:', instructorErr)
+      } else {
+        instructor = instructorData
+      }
+    }
+
+    // Montar resposta com dados combinados
+    const moduleWithRelations = {
+      ...module,
+      lessons: lessons || [],
+      course: course ? {
+        ...course,
+        instructor
+      } : null
+    }
+
     console.log('✅ Module fetched successfully:', module.id)
     return NextResponse.json({ 
       success: true, 
-      module,
+      module: moduleWithRelations,
       debug: {
         moduleId,
-        lessonsCount: module.lessons?.length || 0,
-        courseTitle: module.course?.title
+        lessonsCount: lessons?.length || 0,
+        courseTitle: course?.title,
+        instructorName: instructor?.name
       }
     })
   } catch (error) {
