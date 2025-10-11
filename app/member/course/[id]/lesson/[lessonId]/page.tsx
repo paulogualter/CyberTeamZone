@@ -86,7 +86,7 @@ export default function MemberLessonViewer() {
         // Buscar aulas para cada módulo
         const modulesWithLessons = await Promise.all(
           modulesData.modules.map(async (module: any) => {
-            const lessonsResponse = await fetch(`/api/test/lessons?moduleId=${module.id}`)
+            const lessonsResponse = await fetch(`/api/new-lessons?moduleId=${module.id}`)
             const lessonsData = await lessonsResponse.json()
             
             return {
