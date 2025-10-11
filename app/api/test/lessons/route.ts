@@ -6,48 +6,102 @@ export async function GET(req: NextRequest) {
     console.log('🔍 Test lessons endpoint called')
     
     const { searchParams } = new URL(req.url)
-    const moduleId = searchParams.get('moduleId')
+    const courseId = searchParams.get('courseId')
     
-    if (!moduleId) {
+    if (!courseId) {
       return NextResponse.json({ 
-        error: 'Module ID is required'
+        error: 'Course ID is required'
       }, { status: 400 })
     }
 
-    // Verificar se o módulo existe
-    const { data: module, error: moduleErr } = await supabaseAdmin
-      .from('Module')
-      .select('id, title, courseId')
-      .eq('id', moduleId)
+    // Buscar dados do curso
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from('Course')
+      .select(`
+        id,
+        title,
+        description,
+        instructor:User(
+          id,
+          name,
+          bio,
+          avatar
+        )
+      `)
+      .eq('id', courseId)
       .single()
 
-    if (moduleErr || !module) {
+    console.log('📖 Course data:', course)
+    console.log('❌ Course error:', courseErr)
+
+    if (courseErr || !course) {
       return NextResponse.json({ 
-        error: 'Module not found',
-        debug: moduleErr?.message,
-        moduleId: moduleId
+        error: 'Course not found',
+        debug: {
+          courseId: courseId,
+          courseError: courseErr?.message,
+          courseExists: !!course
+        }
       }, { status: 404 })
     }
 
-    // Buscar aulas do módulo
-    const { data: lessons, error: lessonsErr } = await supabaseAdmin
-      .from('Lesson')
-      .select('*')
-      .eq('moduleId', moduleId)
+    // Buscar módulos do curso
+    const { data: modules, error: modulesErr } = await supabaseAdmin
+      .from('Module')
+      .select(`
+        id,
+        title,
+        order,
+        isPublished,
+        lessons:Lesson(
+          id,
+          title,
+          content,
+          videoUrl,
+          duration,
+          order,
+          type,
+          isPublished,
+          createdAt
+        )
+      `)
+      .eq('courseId', courseId)
       .order('order', { ascending: true })
 
-    return NextResponse.json({ 
-      success: true, 
-      lessons: lessons || [],
+    console.log('📚 Modules data:', modules)
+    console.log('❌ Modules error:', modulesErr)
+
+    if (modulesErr) {
+      console.error('Error fetching modules:', modulesErr)
+      return NextResponse.json({ 
+        error: 'Failed to fetch modules',
+        debug: {
+          courseId: courseId,
+          modulesError: modulesErr.message
+        }
+      }, { status: 500 })
+    }
+
+    // Filtrar apenas aulas publicadas
+    const modulesWithPublishedLessons = modules?.map(module => ({
+      ...module,
+      lessons: module.lessons?.filter(lesson => lesson.isPublished) || []
+    })) || []
+
+    console.log('✅ Real course content fetched successfully')
+
+    return NextResponse.json({
+      success: true,
+      course: {
+        ...course,
+        modules: modulesWithPublishedLessons
+      },
       debug: {
-        moduleId: moduleId,
-        module: {
-          id: module.id,
-          title: module.title,
-          courseId: module.courseId
-        },
-        lessonsCount: lessons?.length || 0,
-        lessonsError: lessonsErr?.message
+        courseId: courseId,
+        courseTitle: course.title,
+        modulesCount: modules?.length || 0,
+        totalLessons: modules?.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0,
+        publishedLessons: modulesWithPublishedLessons.reduce((sum, module) => sum + (module.lessons?.length || 0), 0)
       }
     })
 
