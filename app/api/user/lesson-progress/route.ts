@@ -11,14 +11,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { lessonId, rating } = await req.json()
+    const { lessonId, completed } = await req.json()
 
-    if (!lessonId || !rating) {
-      return NextResponse.json({ error: 'Lesson ID and rating are required' }, { status: 400 })
-    }
-
-    if (rating < 1 || rating > 5) {
-      return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 })
+    if (!lessonId) {
+      return NextResponse.json({ error: 'Lesson ID is required' }, { status: 400 })
     }
 
     // Verificar se a aula existe e se o usuário tem acesso
@@ -55,58 +51,60 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not enrolled in this course' }, { status: 403 })
     }
 
-    // Verificar se já existe uma avaliação
-    const { data: existingRating, error: ratingErr } = await supabaseAdmin
-      .from('LessonRating')
+    // Inserir ou atualizar progresso da aula
+    const { data: existingProgress, error: progressErr } = await supabaseAdmin
+      .from('UserLessonProgress')
       .select('id')
       .eq('userId', session.user.id)
       .eq('lessonId', lessonId)
       .single()
 
-    if (ratingErr && ratingErr.code !== 'PGRST116') {
-      console.error('Error checking rating:', ratingErr)
-      return NextResponse.json({ error: 'Failed to check rating' }, { status: 500 })
+    if (progressErr && progressErr.code !== 'PGRST116') {
+      console.error('Error checking progress:', progressErr)
+      return NextResponse.json({ error: 'Failed to check progress' }, { status: 500 })
     }
 
-    if (existingRating) {
-      // Atualizar avaliação existente
+    if (existingProgress) {
+      // Atualizar progresso existente
       const { error: updateErr } = await supabaseAdmin
-        .from('LessonRating')
+        .from('UserLessonProgress')
         .update({
-          rating,
+          completed,
+          completedAt: completed ? new Date().toISOString() : null,
           updatedAt: new Date().toISOString()
         })
-        .eq('id', existingRating.id)
+        .eq('id', existingProgress.id)
 
       if (updateErr) {
-        console.error('Error updating rating:', updateErr)
-        return NextResponse.json({ error: 'Failed to update rating' }, { status: 500 })
+        console.error('Error updating progress:', updateErr)
+        return NextResponse.json({ error: 'Failed to update progress' }, { status: 500 })
       }
     } else {
-      // Criar nova avaliação
+      // Criar novo progresso
       const { error: insertErr } = await supabaseAdmin
-        .from('LessonRating')
+        .from('UserLessonProgress')
         .insert({
           userId: session.user.id,
           lessonId,
-          rating,
+          completed,
+          completedAt: completed ? new Date().toISOString() : null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         })
 
       if (insertErr) {
-        console.error('Error creating rating:', insertErr)
-        return NextResponse.json({ error: 'Failed to create rating' }, { status: 500 })
+        console.error('Error creating progress:', insertErr)
+        return NextResponse.json({ error: 'Failed to create progress' }, { status: 500 })
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Rating saved successfully'
+      message: completed ? 'Lesson marked as completed' : 'Lesson marked as incomplete'
     })
 
   } catch (error) {
-    console.error('Error in POST /api/lessons/rating:', error)
+    console.error('Error in POST /api/user/lesson-progress:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
       { error: 'Internal server error', debug: errorMessage },
@@ -124,32 +122,43 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url)
-    const lessonId = searchParams.get('lessonId')
+    const courseId = searchParams.get('courseId')
 
-    if (!lessonId) {
-      return NextResponse.json({ error: 'Lesson ID is required' }, { status: 400 })
+    if (!courseId) {
+      return NextResponse.json({ error: 'Course ID is required' }, { status: 400 })
     }
 
-    // Buscar avaliação do usuário para a aula
-    const { data: rating, error: ratingErr } = await supabaseAdmin
-      .from('LessonRating')
-      .select('rating')
+    // Buscar progresso do usuário no curso
+    const { data: progress, error: progressErr } = await supabaseAdmin
+      .from('UserLessonProgress')
+      .select(`
+        lessonId,
+        completed,
+        completedAt,
+        lesson:Lesson(
+          id,
+          title,
+          moduleId,
+          module:Module(
+            courseId
+          )
+        )
+      `)
       .eq('userId', session.user.id)
-      .eq('lessonId', lessonId)
-      .single()
+      .eq('lesson.module.courseId', courseId)
 
-    if (ratingErr && ratingErr.code !== 'PGRST116') {
-      console.error('Error fetching rating:', ratingErr)
-      return NextResponse.json({ error: 'Failed to fetch rating' }, { status: 500 })
+    if (progressErr) {
+      console.error('Error fetching progress:', progressErr)
+      return NextResponse.json({ error: 'Failed to fetch progress' }, { status: 500 })
     }
 
     return NextResponse.json({
       success: true,
-      rating: rating?.rating || 0
+      progress: progress || []
     })
 
   } catch (error) {
-    console.error('Error in GET /api/lessons/rating:', error)
+    console.error('Error in GET /api/user/lesson-progress:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
       { error: 'Internal server error', debug: errorMessage },

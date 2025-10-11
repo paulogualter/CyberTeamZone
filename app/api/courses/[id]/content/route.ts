@@ -9,40 +9,100 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    const role = (session?.user as any)?.role as string | undefined
-    const bypassVisibility = role === 'ADMIN' || role === 'INSTRUCTOR'
-
-    let query = supabaseAdmin
-      .from('Course')
-      .select(`
-        *,
-        instructor:Instructor(id,name,email),
-        modules:Module(id,title,description,order,lessons:Lesson(id,title,type,order,videoUrl,attachment,content))
-      `)
-      .eq('id', params.id)
-
-    if (!bypassVisibility) {
-      query = query.eq('isPublished', true).eq('status', 'ACTIVE').eq('approvalStatus', 'APPROVED')
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: course, error } = await query.single()
-    if (error || !course) {
+    const courseId = params.id
+
+    // Buscar dados do curso
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from('Course')
+      .select(`
+        id,
+        title,
+        description,
+        instructor:User(
+          id,
+          name,
+          bio,
+          avatar
+        )
+      `)
+      .eq('id', courseId)
+      .eq('approvalStatus', 'APPROVED')
+      .single()
+
+    if (courseErr || !course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
-    const ordered = {
-      ...course,
-      modules: (course.modules || []).map((m: any) => ({
-        ...m,
-        lessons: (m.lessons || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-      })).sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+    // Buscar módulos do curso
+    const { data: modules, error: modulesErr } = await supabaseAdmin
+      .from('Module')
+      .select(`
+        id,
+        title,
+        order,
+        lessons:Lesson(
+          id,
+          title,
+          content,
+          videoUrl,
+          duration,
+          order,
+          type,
+          isPublished,
+          createdAt
+        )
+      `)
+      .eq('courseId', courseId)
+      .eq('isPublished', true)
+      .order('order', { ascending: true })
+
+    if (modulesErr) {
+      console.error('Error fetching modules:', modulesErr)
+      return NextResponse.json({ error: 'Failed to fetch modules' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, course: ordered })
-  } catch (e) {
-    console.error('Error fetching public course content:', e)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    // Filtrar apenas aulas publicadas
+    const modulesWithPublishedLessons = modules?.map(module => ({
+      ...module,
+      lessons: module.lessons?.filter(lesson => lesson.isPublished) || []
+    })) || []
+
+    // Verificar se o usuário está matriculado no curso
+    const { data: enrollment, error: enrollmentErr } = await supabaseAdmin
+      .from('UserCourseEnrollment')
+      .select('id')
+      .eq('userId', session.user.id)
+      .eq('courseId', courseId)
+      .single()
+
+    if (enrollmentErr && enrollmentErr.code !== 'PGRST116') {
+      console.error('Error checking enrollment:', enrollmentErr)
+      return NextResponse.json({ error: 'Failed to check enrollment' }, { status: 500 })
+    }
+
+    if (!enrollment) {
+      return NextResponse.json({ error: 'User not enrolled in this course' }, { status: 403 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      course: {
+        ...course,
+        modules: modulesWithPublishedLessons
+      }
+    })
+
+  } catch (error) {
+    console.error('Error in GET /api/courses/[id]/content:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json(
+      { error: 'Internal server error', debug: errorMessage },
+      { status: 500 }
+    )
   }
 }
-
-
