@@ -42,7 +42,7 @@ export function useLessons({ moduleId }: UseLessonsProps): UseLessonsReturn {
     setError(null)
 
     try {
-      const response = await fetch(`/api/lessons-crud?moduleId=${moduleId}`)
+      const response = await fetch(`/api/test/lessons?moduleId=${moduleId}`)
       const data = await response.json()
 
       if (!response.ok) {
@@ -64,7 +64,7 @@ export function useLessons({ moduleId }: UseLessonsProps): UseLessonsReturn {
     setError(null)
 
     try {
-      const response = await fetch('/api/lessons-crud', {
+      const response = await fetch('/api/test/lessons', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ export function useLessons({ moduleId }: UseLessonsProps): UseLessonsReturn {
     setError(null)
 
     try {
-      const response = await fetch('/api/lessons-crud', {
+      const response = await fetch('/api/test/lessons', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ export function useLessons({ moduleId }: UseLessonsProps): UseLessonsReturn {
     setError(null)
 
     try {
-      const response = await fetch(`/api/lessons-crud?id=${lessonId}`, {
+      const response = await fetch(`/api/test/lessons?id=${lessonId}`, {
         method: 'DELETE',
       })
 
