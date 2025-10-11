@@ -64,7 +64,7 @@ export function useLessons({ moduleId }: UseLessonsProps): UseLessonsReturn {
     setError(null)
 
     try {
-      const response = await fetch('/api/test/lessons', {
+      const response = await fetch('/api/test/simple-lessons', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
