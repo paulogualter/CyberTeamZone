@@ -3,113 +3,196 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// DELETE - Excluir aula (para admins e instrutores)
+// GET - Buscar aula específica
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const lessonId = params.id
+
+    const { data: lesson, error } = await supabaseAdmin
+      .from('Lesson')
+      .select(`
+        id,
+        title,
+        content,
+        videoUrl,
+        duration,
+        order,
+        type,
+        isPublished,
+        moduleId,
+        createdAt,
+        updatedAt,
+        module:Module(
+          id,
+          courseId,
+          course:Course(
+            instructorId,
+            approvalStatus
+          )
+        )
+      `)
+      .eq('id', lessonId)
+      .single()
+
+    if (error || !lesson) {
+      return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
+    }
+
+    // Verificar permissões
+    if (session.user.role === 'INSTRUCTOR' && lesson.module.course.instructorId !== session.user.id) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
+    if (session.user.role === 'STUDENT' && lesson.module.course.approvalStatus !== 'APPROVED') {
+      return NextResponse.json({ error: 'Course not available' }, { status: 403 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      lesson
+    })
+
+  } catch (error) {
+    console.error('Error in GET /api/lessons/[id]:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// PUT - Atualizar aula
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const lessonId = params.id
+    const body = await req.json()
+
+    // Verificar se a aula existe
+    const { data: existingLesson, error: fetchError } = await supabaseAdmin
+      .from('Lesson')
+      .select(`
+        id,
+        module:Module(
+          course:Course(
+            instructorId
+          )
+        )
+      `)
+      .eq('id', lessonId)
+      .single()
+
+    if (fetchError || !existingLesson) {
+      return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
+    }
+
+    // Verificar permissões
+    if (session.user.role === 'INSTRUCTOR' && existingLesson.module.course.instructorId !== session.user.id) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
+    if (!['ADMIN', 'INSTRUCTOR'].includes(session.user.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { data: lesson, error } = await supabaseAdmin
+      .from('Lesson')
+      .update({
+        ...body,
+        updatedAt: new Date().toISOString()
+      })
+      .eq('id', lessonId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating lesson:', error)
+      return NextResponse.json({ error: 'Failed to update lesson' }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      lesson
+    })
+
+  } catch (error) {
+    console.error('Error in PUT /api/lessons/[id]:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// DELETE - Deletar aula
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    console.log('🔍 Universal lessons DELETE endpoint called')
-    
     const session = await getServerSession(authOptions)
-    console.log('📋 Session exists:', !!session)
     
     if (!session?.user?.id) {
-      console.log('❌ No session')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userRole = (session.user as any)?.role
-    console.log('👤 User role:', userRole)
-    
-    if (!['ADMIN', 'INSTRUCTOR'].includes(userRole)) {
-      console.log('❌ Not authorized role')
+    const lessonId = params.id
+
+    // Verificar se a aula existe
+    const { data: existingLesson, error: fetchError } = await supabaseAdmin
+      .from('Lesson')
+      .select(`
+        id,
+        module:Module(
+          course:Course(
+            instructorId
+          )
+        )
+      `)
+      .eq('id', lessonId)
+      .single()
+
+    if (fetchError || !existingLesson) {
+      return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
+    }
+
+    // Verificar permissões
+    if (session.user.role === 'INSTRUCTOR' && existingLesson.module.course.instructorId !== session.user.id) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
+    if (!['ADMIN', 'INSTRUCTOR'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const lessonId = params.id
-    console.log('📚 Lesson ID:', lessonId)
-
-    if (!lessonId) {
-      return NextResponse.json({ error: 'Lesson ID is required' }, { status: 400 })
-    }
-
-    // Se for instrutor, verificar se a aula pertence a um módulo de um curso dele
-    if (userRole === 'INSTRUCTOR') {
-      // Primeiro, buscar a aula e seu módulo
-      const { data: lesson, error: lessonErr } = await supabaseAdmin
-        .from('Lesson')
-        .select('id, moduleId')
-        .eq('id', lessonId)
-        .single()
-
-      if (lessonErr || !lesson) {
-        console.log('❌ Lesson not found:', lessonErr?.message)
-        return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
-      }
-
-      // Depois, buscar o módulo e verificar o curso
-      const { data: module, error: moduleErr } = await supabaseAdmin
-        .from('Module')
-        .select('id, courseId')
-        .eq('id', lesson.moduleId)
-        .single()
-
-      if (moduleErr || !module) {
-        console.log('❌ Module not found:', moduleErr?.message)
-        return NextResponse.json({ error: 'Module not found' }, { status: 404 })
-      }
-
-      // Finalmente, verificar se o curso pertence ao instrutor
-      const { data: course, error: courseErr } = await supabaseAdmin
-        .from('Course')
-        .select('id, instructorId')
-        .eq('id', module.courseId)
-        .single()
-
-      if (courseErr || !course || course.instructorId !== session.user.id) {
-        console.log('❌ Course not found or access denied for instructor:', courseErr?.message)
-        return NextResponse.json({ error: 'Course not found or access denied' }, { status: 404 })
-      }
-    }
-
-    console.log('🔗 Deleting lesson from Supabase...')
-    
-    // Excluir aula
-    const { error: deleteErr } = await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from('Lesson')
       .delete()
       .eq('id', lessonId)
 
-    console.log('📊 Lesson deletion result:', { error: deleteErr?.message })
-
-    if (deleteErr) {
-      console.error('❌ Error deleting lesson:', deleteErr)
-      return NextResponse.json({ 
-        error: 'Failed to delete lesson',
-        debug: { supabaseError: deleteErr.message }
-      }, { status: 500 })
+    if (error) {
+      console.error('Error deleting lesson:', error)
+      return NextResponse.json({ error: 'Failed to delete lesson' }, { status: 500 })
     }
 
-    console.log('✅ Lesson deleted successfully:', lessonId)
     return NextResponse.json({
       success: true,
-      debug: {
-        lessonId,
-        userRole
-      }
+      message: 'Lesson deleted successfully'
     })
+
   } catch (error) {
-    console.error('❌ Error in universal lessons DELETE:', error)
-    return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        debug: {
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
-        }
-      },
-      { status: 500 }
-    )
+    console.error('Error in DELETE /api/lessons/[id]:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

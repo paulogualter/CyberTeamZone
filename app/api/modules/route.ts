@@ -3,230 +3,163 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// GET - Listar módulos de um curso (para admins e instrutores)
+// GET - Listar módulos de um curso
 export async function GET(req: NextRequest) {
   try {
-    console.log('🔍 Universal modules GET endpoint called')
-    
     const session = await getServerSession(authOptions)
-    console.log('📋 Session exists:', !!session)
     
     if (!session?.user?.id) {
-      console.log('❌ No session')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const userRole = (session.user as any)?.role
-    console.log('👤 User role:', userRole)
-    
-    if (!['ADMIN', 'INSTRUCTOR'].includes(userRole)) {
-      console.log('❌ Not authorized role')
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { searchParams } = new URL(req.url)
     const courseId = searchParams.get('courseId')
-    console.log('📚 Course ID:', courseId)
 
     if (!courseId) {
       return NextResponse.json({ error: 'Course ID is required' }, { status: 400 })
     }
 
-    // Se for instrutor, verificar se o curso pertence a ele
-    if (userRole === 'INSTRUCTOR') {
-      const { data: course, error: courseErr } = await supabaseAdmin
-        .from('Course')
-        .select('id, instructorId')
-        .eq('id', courseId)
-        .eq('instructorId', session.user.id)
-        .single()
+    // Verificar se o curso existe e permissões
+    const { data: course, error: courseError } = await supabaseAdmin
+      .from('Course')
+      .select('instructorId, approvalStatus')
+      .eq('id', courseId)
+      .single()
 
-      if (courseErr || !course) {
-        console.log('❌ Course not found or access denied for instructor:', courseErr?.message)
-        return NextResponse.json({ error: 'Course not found or access denied' }, { status: 404 })
-      }
+    if (courseError || !course) {
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
-    console.log('🔗 Fetching modules from Supabase...')
-    
-    // Buscar módulos do curso
-    const { data: modules, error: modErr } = await supabaseAdmin
+    // Verificar permissões
+    if (session.user.role === 'INSTRUCTOR' && course.instructorId !== session.user.id) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
+    if (session.user.role === 'STUDENT' && course.approvalStatus !== 'APPROVED') {
+      return NextResponse.json({ error: 'Course not available' }, { status: 403 })
+    }
+
+    const { data: modules, error } = await supabaseAdmin
       .from('Module')
       .select(`
-        *,
-        lessons:Lesson(*),
-        course:Course(id, title, instructorId)
+        id,
+        title,
+        description,
+        order,
+        courseId,
+        createdAt,
+        updatedAt,
+        lessons:Lesson(
+          id,
+          title,
+          content,
+          videoUrl,
+          duration,
+          order,
+          type,
+          isPublished,
+          createdAt
+        )
       `)
       .eq('courseId', courseId)
       .order('order', { ascending: true })
 
-    console.log('📊 Supabase result:', { modules: modules?.length || 0, error: modErr?.message })
-
-    if (modErr) {
-      console.error('❌ Error fetching modules:', modErr)
-      return NextResponse.json({ 
-        error: 'Failed to fetch modules',
-        debug: { supabaseError: modErr.message }
-      }, { status: 500 })
+    if (error) {
+      console.error('Error fetching modules:', error)
+      return NextResponse.json({ error: 'Failed to fetch modules' }, { status: 500 })
     }
 
-    console.log('✅ Modules fetched successfully:', modules?.length || 0)
-    return NextResponse.json({ 
-      success: true, 
-      modules: modules || [],
-      debug: {
-        courseId,
-        modulesCount: modules?.length || 0,
-        userRole
-      }
+    // Ordenar aulas dentro de cada módulo
+    const orderedModules = modules?.map(module => ({
+      ...module,
+      lessons: (module.lessons || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+    })) || []
+
+    return NextResponse.json({
+      success: true,
+      modules: orderedModules
     })
+
   } catch (error) {
-    console.error('❌ Error in universal modules GET:', error)
-    return NextResponse.json(
-      { 
-        error: 'Internal server error', 
-        debug: {
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
-        }
-      },
-      { status: 500 }
-    )
+    console.error('Error in GET /api/modules:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// POST - Criar novo módulo (para admins e instrutores)
+// POST - Criar novo módulo
 export async function POST(req: NextRequest) {
   try {
-    console.log('🔍 Universal modules POST endpoint called')
-    
     const session = await getServerSession(authOptions)
-    console.log('📋 Session exists:', !!session)
     
     if (!session?.user?.id) {
-      console.log('❌ No session')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userRole = (session.user as any)?.role
-    console.log('👤 User role:', userRole)
-    
-    if (!['ADMIN', 'INSTRUCTOR'].includes(userRole)) {
-      console.log('❌ Not authorized role')
+    if (!['ADMIN', 'INSTRUCTOR'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await req.json()
-    console.log('📝 Request body:', body)
+    const { title, description, courseId, order } = body
 
-    const { title, description, order, courseId } = body
-
-    // Validação básica
     if (!title || !courseId) {
-      console.log('❌ Missing required fields:', { title: !!title, courseId: !!courseId })
-      return NextResponse.json(
-        { error: 'Title and courseId are required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Title and courseId are required' }, { status: 400 })
     }
 
-    console.log('🔍 Verifying course exists...')
-    
-    // Verificar se o curso existe
-    let courseQuery = supabaseAdmin
+    // Verificar se o curso existe e permissões
+    const { data: course, error: courseError } = await supabaseAdmin
       .from('Course')
-      .select('id, instructorId')
+      .select('instructorId')
       .eq('id', courseId)
+      .single()
 
-    // Se for instrutor, verificar se o curso pertence a ele
-    if (userRole === 'INSTRUCTOR') {
-      courseQuery = courseQuery.eq('instructorId', session.user.id)
+    if (courseError || !course) {
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 })
     }
 
-    const { data: course, error: courseErr } = await courseQuery.single()
-
-    console.log('📊 Course verification:', { course: !!course, error: courseErr?.message })
-
-    if (courseErr || !course) {
-      console.log('❌ Course not found:', courseErr?.message)
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      )
+    if (session.user.role === 'INSTRUCTOR' && course.instructorId !== session.user.id) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Próxima ordem se não informada
-    let moduleOrder = order as number | undefined
+    // Buscar próximo order se não fornecido
+    let moduleOrder = order
     if (!moduleOrder) {
-      console.log('🔍 Getting next order...')
-      const { data: last, error: lastErr } = await supabaseAdmin
+      const { data: lastModule } = await supabaseAdmin
         .from('Module')
         .select('order')
         .eq('courseId', courseId)
         .order('order', { ascending: false })
         .limit(1)
-        .maybeSingle()
-      if (lastErr) {
-        console.warn('Could not get last module order:', lastErr)
-      }
-      moduleOrder = last?.order ? (Number(last.order) + 1) : 1
-      console.log('📊 Next order:', moduleOrder)
+        .single()
+
+      moduleOrder = lastModule ? lastModule.order + 1 : 1
     }
 
-    const nowIso = new Date().toISOString()
-    const moduleId = `module_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
-    console.log('🆔 Generated module ID:', moduleId)
+    const moduleData = {
+      title,
+      description: description || '',
+      courseId,
+      order: moduleOrder
+    }
 
-    console.log('🔗 Creating module in Supabase...')
-    
-    // Criar módulo
-    const { data: created, error: createErr } = await supabaseAdmin
+    const { data: module, error } = await supabaseAdmin
       .from('Module')
-      .insert({
-        id: moduleId,
-        title,
-        description: description || '',
-        courseId,
-        order: moduleOrder,
-        isPublished: false,
-        createdAt: nowIso,
-        updatedAt: nowIso
-      })
-      .select('*, lessons:Lesson(*)')
+      .insert([moduleData])
+      .select()
       .single()
 
-    console.log('📊 Module creation result:', { created: !!created, error: createErr?.message })
-
-    if (createErr) {
-      console.error('❌ Error creating module:', createErr)
-      return NextResponse.json({ 
-        error: 'Failed to create module',
-        debug: { supabaseError: createErr.message }
-      }, { status: 500 })
+    if (error) {
+      console.error('Error creating module:', error)
+      return NextResponse.json({ error: 'Failed to create module' }, { status: 500 })
     }
 
-    console.log('✅ Module created successfully:', created?.id)
     return NextResponse.json({
       success: true,
-      module: created,
-      debug: {
-        moduleId: created?.id,
-        courseId,
-        title,
-        userRole
-      }
-    }, { status: 201 })
+      module
+    })
+
   } catch (error) {
-    console.error('❌ Error in universal modules POST:', error)
-    return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        debug: {
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
-        }
-      },
-      { status: 500 }
-    )
+    console.error('Error in POST /api/modules:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

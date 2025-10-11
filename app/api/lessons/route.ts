@@ -3,252 +3,167 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// GET - Listar aulas de um módulo (para admins e instrutores)
+// GET - Listar aulas de um módulo
 export async function GET(req: NextRequest) {
   try {
-    console.log('🔍 Universal lessons GET endpoint called')
-    
     const session = await getServerSession(authOptions)
-    console.log('📋 Session exists:', !!session)
     
     if (!session?.user?.id) {
-      console.log('❌ No session')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const userRole = (session.user as any)?.role
-    console.log('👤 User role:', userRole)
-    
-    if (!['ADMIN', 'INSTRUCTOR'].includes(userRole)) {
-      console.log('❌ Not authorized role')
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { searchParams } = new URL(req.url)
     const moduleId = searchParams.get('moduleId')
-    console.log('📚 Module ID:', moduleId)
 
     if (!moduleId) {
       return NextResponse.json({ error: 'Module ID is required' }, { status: 400 })
     }
 
-    // Se for instrutor, verificar se o módulo pertence a um curso dele
-    if (userRole === 'INSTRUCTOR') {
-      // Primeiro, buscar o módulo
-      const { data: module, error: moduleErr } = await supabaseAdmin
-        .from('Module')
-        .select('id, courseId')
-        .eq('id', moduleId)
-        .single()
+    // Verificar se o módulo existe e permissões
+    const { data: module, error: moduleError } = await supabaseAdmin
+      .from('Module')
+      .select(`
+        id,
+        courseId,
+        course:Course(
+          instructorId,
+          approvalStatus
+        )
+      `)
+      .eq('id', moduleId)
+      .single()
 
-      if (moduleErr || !module) {
-        console.log('❌ Module not found:', moduleErr?.message)
-        return NextResponse.json({ error: 'Module not found' }, { status: 404 })
-      }
-
-      // Depois, verificar se o curso pertence ao instrutor
-      const { data: course, error: courseErr } = await supabaseAdmin
-        .from('Course')
-        .select('id, instructorId')
-        .eq('id', module.courseId)
-        .single()
-
-      if (courseErr || !course || course.instructorId !== session.user.id) {
-        console.log('❌ Course not found or access denied for instructor:', courseErr?.message)
-        return NextResponse.json({ error: 'Course not found or access denied' }, { status: 404 })
-      }
+    if (moduleError || !module) {
+      return NextResponse.json({ error: 'Module not found' }, { status: 404 })
     }
 
-    console.log('🔗 Fetching lessons from Supabase...')
-    
-    // Buscar aulas do módulo
-    const { data: lessons, error: lessonsErr } = await supabaseAdmin
+    // Verificar permissões
+    if (session.user.role === 'INSTRUCTOR' && module.course.instructorId !== session.user.id) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
+    if (session.user.role === 'STUDENT' && module.course.approvalStatus !== 'APPROVED') {
+      return NextResponse.json({ error: 'Course not available' }, { status: 403 })
+    }
+
+    const { data: lessons, error } = await supabaseAdmin
       .from('Lesson')
       .select(`
-        *,
-        module:Module(id, title, courseId, course:Course(id, title, instructorId))
+        id,
+        title,
+        content,
+        videoUrl,
+        duration,
+        order,
+        type,
+        isPublished,
+        moduleId,
+        createdAt,
+        updatedAt
       `)
       .eq('moduleId', moduleId)
       .order('order', { ascending: true })
 
-    console.log('📊 Supabase result:', { lessons: lessons?.length || 0, error: lessonsErr?.message })
-
-    if (lessonsErr) {
-      console.error('❌ Error fetching lessons:', lessonsErr)
-      return NextResponse.json({ 
-        error: 'Failed to fetch lessons',
-        debug: { supabaseError: lessonsErr.message }
-      }, { status: 500 })
+    if (error) {
+      console.error('Error fetching lessons:', error)
+      return NextResponse.json({ error: 'Failed to fetch lessons' }, { status: 500 })
     }
 
-    console.log('✅ Lessons fetched successfully:', lessons?.length || 0)
-    return NextResponse.json({ 
-      success: true, 
-      lessons: lessons || [],
-      debug: {
-        moduleId,
-        lessonsCount: lessons?.length || 0,
-        userRole
-      }
+    return NextResponse.json({
+      success: true,
+      lessons: lessons || []
     })
+
   } catch (error) {
-    console.error('❌ Error in universal lessons GET:', error)
-    return NextResponse.json(
-      { 
-        error: 'Internal server error', 
-        debug: {
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
-        }
-      },
-      { status: 500 }
-    )
+    console.error('Error in GET /api/lessons:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// POST - Criar nova aula (para admins e instrutores)
+// POST - Criar nova aula
 export async function POST(req: NextRequest) {
   try {
-    console.log('🔍 Universal lessons POST endpoint called')
-    
     const session = await getServerSession(authOptions)
-    console.log('📋 Session exists:', !!session)
     
     if (!session?.user?.id) {
-      console.log('❌ No session')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userRole = (session.user as any)?.role
-    console.log('👤 User role:', userRole)
-    
-    if (!['ADMIN', 'INSTRUCTOR'].includes(userRole)) {
-      console.log('❌ Not authorized role')
+    if (!['ADMIN', 'INSTRUCTOR'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await req.json()
-    console.log('📝 Request body:', body)
+    const { title, content, videoUrl, duration, moduleId, order, type, isPublished } = body
 
-    const { title, description, content, order, moduleId, duration, videoUrl } = body
-
-    // Validação básica
     if (!title || !moduleId) {
-      console.log('❌ Missing required fields:', { title: !!title, moduleId: !!moduleId })
-      return NextResponse.json(
-        { error: 'Title and moduleId are required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Title and moduleId are required' }, { status: 400 })
     }
 
-    console.log('🔍 Verifying module exists...')
-    
-    // Verificar se o módulo existe usando queries separadas
-    const { data: module, error: moduleErr } = await supabaseAdmin
+    // Verificar se o módulo existe e permissões
+    const { data: module, error: moduleError } = await supabaseAdmin
       .from('Module')
-      .select('id, courseId')
+      .select(`
+        id,
+        courseId,
+        course:Course(
+          instructorId
+        )
+      `)
       .eq('id', moduleId)
       .single()
 
-    console.log('📊 Module verification:', { module: !!module, error: moduleErr?.message })
-
-    if (moduleErr || !module) {
-      console.log('❌ Module not found:', moduleErr?.message)
-      return NextResponse.json(
-        { error: 'Module not found' },
-        { status: 404 }
-      )
+    if (moduleError || !module) {
+      return NextResponse.json({ error: 'Module not found' }, { status: 404 })
     }
 
-    // Se for instrutor, verificar se o curso pertence a ele
-    if (userRole === 'INSTRUCTOR') {
-      const { data: course, error: courseErr } = await supabaseAdmin
-        .from('Course')
-        .select('id, instructorId')
-        .eq('id', module.courseId)
-        .single()
-
-      if (courseErr || !course || course.instructorId !== session.user.id) {
-        console.log('❌ Course not found or access denied for instructor:', courseErr?.message)
-        return NextResponse.json({ error: 'Course not found or access denied' }, { status: 404 })
-      }
+    if (session.user.role === 'INSTRUCTOR' && module.course.instructorId !== session.user.id) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Próxima ordem se não informada
-    let lessonOrder = order as number | undefined
+    // Buscar próximo order se não fornecido
+    let lessonOrder = order
     if (!lessonOrder) {
-      console.log('🔍 Getting next order...')
-      const { data: last, error: lastErr } = await supabaseAdmin
+      const { data: lastLesson } = await supabaseAdmin
         .from('Lesson')
         .select('order')
         .eq('moduleId', moduleId)
         .order('order', { ascending: false })
         .limit(1)
-        .maybeSingle()
-      if (lastErr) {
-        console.warn('Could not get last lesson order:', lastErr)
-      }
-      lessonOrder = last?.order ? (Number(last.order) + 1) : 1
-      console.log('📊 Next order:', lessonOrder)
+        .single()
+
+      lessonOrder = lastLesson ? lastLesson.order + 1 : 1
     }
 
-    const nowIso = new Date().toISOString()
-    const lessonId = `lesson_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
-    console.log('🆔 Generated lesson ID:', lessonId)
+    const lessonData = {
+      title,
+      content: content || '',
+      videoUrl: videoUrl || null,
+      duration: duration || null,
+      moduleId,
+      order: lessonOrder,
+      type: type || 'VIDEO',
+      isPublished: isPublished || false
+    }
 
-    console.log('🔗 Creating lesson in Supabase...')
-    
-    // Criar aula
-    const { data: created, error: createErr } = await supabaseAdmin
+    const { data: lesson, error } = await supabaseAdmin
       .from('Lesson')
-      .insert({
-        id: lessonId,
-        title,
-        description: description || '',
-        content: content || '',
-        moduleId,
-        order: lessonOrder,
-        duration: duration || 0,
-        videoUrl: videoUrl || '',
-        isPublished: false,
-        createdAt: nowIso,
-        updatedAt: nowIso
-      })
-      .select('*')
+      .insert([lessonData])
+      .select()
       .single()
 
-    console.log('📊 Lesson creation result:', { created: !!created, error: createErr?.message })
-
-    if (createErr) {
-      console.error('❌ Error creating lesson:', createErr)
-      return NextResponse.json({ 
-        error: 'Failed to create lesson',
-        debug: { supabaseError: createErr.message }
-      }, { status: 500 })
+    if (error) {
+      console.error('Error creating lesson:', error)
+      return NextResponse.json({ error: 'Failed to create lesson' }, { status: 500 })
     }
 
-    console.log('✅ Lesson created successfully:', created?.id)
     return NextResponse.json({
       success: true,
-      lesson: created,
-      debug: {
-        lessonId: created?.id,
-        moduleId,
-        title,
-        userRole
-      }
-    }, { status: 201 })
+      lesson
+    })
+
   } catch (error) {
-    console.error('❌ Error in universal lessons POST:', error)
-    return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        debug: {
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
-        }
-      },
-      { status: 500 }
-    )
+    console.error('Error in POST /api/lessons:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
