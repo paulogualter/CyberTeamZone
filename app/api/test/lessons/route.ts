@@ -71,6 +71,19 @@ export async function POST(req: NextRequest) {
     console.log('📝 Request body:', JSON.stringify(body, null, 2))
     
     const { title, content, type, duration, order, videoUrl, attachment, moduleId, isPublished } = body
+    
+    console.log('🔍 Extracted values:', {
+      title,
+      content,
+      type,
+      duration,
+      order,
+      videoUrl,
+      attachment,
+      moduleId,
+      isPublished,
+      isPublishedType: typeof isPublished
+    })
 
     // Validação básica
     if (!title || !content || !type || !moduleId) {
