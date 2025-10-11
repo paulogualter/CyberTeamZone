@@ -89,6 +89,12 @@ export default function LessonModal({
   }
 
   const handleVideoUploaded = (videoUrl: string, filename: string) => {
+    console.log('🔍 LessonModal - Vídeo carregado:', {
+      videoUrl: videoUrl.substring(0, 100) + '...',
+      filename: filename,
+      videoUrlLength: videoUrl.length
+    })
+    
     setFormData(prev => ({
       ...prev,
       videoUrl
@@ -117,11 +123,23 @@ export default function LessonModal({
         throw new Error('O conteúdo da aula é obrigatório')
       }
 
+      console.log('🔍 LessonModal - Dados sendo salvos:', {
+        title: formData.title,
+        content: formData.content,
+        videoUrl: formData.videoUrl,
+        type: formData.type,
+        duration: formData.duration,
+        order: formData.order,
+        isPublished: formData.isPublished,
+        moduleId: formData.moduleId
+      })
+
       await onSave(formData)
       onClose()
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao salvar aula'
       setError(errorMessage)
+      console.error('❌ LessonModal - Erro ao salvar:', err)
     } finally {
       setIsLoading(false)
     }
