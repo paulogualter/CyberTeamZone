@@ -18,32 +18,11 @@ export async function GET(
     const { data: course, error } = await supabaseAdmin
       .from('Course')
       .select(`
-        id,
-        title,
-        description,
-        instructor:User(
-          id,
-          name,
-          bio,
-          avatar
-        ),
+        *,
+        instructor:Instructor(*),
         modules:Module(
-          id,
-          title,
-          description,
-          order,
-          lessons:Lesson(
-            id,
-            title,
-            type,
-            order,
-            videoUrl,
-            attachment,
-            content,
-            duration,
-            isPublished,
-            createdAt
-          )
+          *,
+          lessons:Lesson(*)
         )
       `)
       .eq('id', params.id)
@@ -63,21 +42,21 @@ export async function GET(
       }, { status: 404 })
     }
 
-    // Filtrar apenas aulas publicadas para visualização de membros
-    const modulesWithPublishedLessons = (course.modules || []).map((m: any) => ({
+    // Ordenar módulos e aulas
+    const orderedModules = (course.modules || []).map((m: any) => ({
       ...m,
-      lessons: (m.lessons || []).filter((lesson: any) => lesson.isPublished)
+      lessons: (m.lessons || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
     })).sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
 
     const ordered = {
       ...course,
-      modules: modulesWithPublishedLessons
+      modules: orderedModules
     }
 
-    console.log('✅ Returning course data with published lessons:', {
+    console.log('✅ Returning course data:', {
       courseId: params.id,
-      modulesCount: modulesWithPublishedLessons.length,
-      totalLessons: modulesWithPublishedLessons.reduce((sum: any, m: any) => sum + (m.lessons?.length || 0), 0)
+      modulesCount: orderedModules.length,
+      totalLessons: orderedModules.reduce((sum: any, m: any) => sum + (m.lessons?.length || 0), 0)
     })
 
     return NextResponse.json({ success: true, course: ordered })
