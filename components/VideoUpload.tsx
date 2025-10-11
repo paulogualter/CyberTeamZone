@@ -48,33 +48,30 @@ export default function VideoUpload({
     setUploadProgress(0)
 
     try {
-      const formData = new FormData()
-      formData.append('video', file)
-
-      const response = await fetch('/api/debug/upload-video', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Erro ao fazer upload do vídeo')
+      // Converter arquivo para base64 localmente
+      const reader = new FileReader()
+      
+      reader.onload = (e) => {
+        const result = e.target?.result as string
+        if (result) {
+          setVideoUrl(result)
+          onVideoUploaded(result, file.name)
+          setUploadProgress(100)
+          setIsUploading(false)
+        }
       }
-
-      if (result.success) {
-        setVideoUrl(result.videoUrl)
-        onVideoUploaded(result.videoUrl, result.filename)
-        setUploadProgress(100)
-      } else {
-        throw new Error(result.error || 'Erro ao fazer upload do vídeo')
+      
+      reader.onerror = () => {
+        setError('Erro ao processar o arquivo de vídeo')
+        setIsUploading(false)
       }
+      
+      reader.readAsDataURL(file)
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
       setError(errorMessage)
       console.error('Erro no upload:', err)
-    } finally {
       setIsUploading(false)
     }
   }, [onVideoUploaded])
