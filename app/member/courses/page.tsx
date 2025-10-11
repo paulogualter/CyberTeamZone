@@ -137,7 +137,7 @@ export default function MemberCoursesPage() {
                     </p>
                     <div className="flex items-center text-sm text-gray-400">
                       <UserIcon className="h-4 w-4 mr-1" />
-                      Instrutor: {course.instructor.name}
+                      Instrutor: {course.instructorId || 'Não informado'}
                     </div>
                   </div>
                 </div>
