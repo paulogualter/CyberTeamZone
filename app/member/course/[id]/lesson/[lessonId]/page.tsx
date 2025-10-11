@@ -72,7 +72,7 @@ export default function MemberLessonViewer() {
 
   const fetchCourseData = async () => {
     try {
-      const response = await fetch(`/api/courses/${courseId}/content`)
+      const response = await fetch(`/api/test/courses/${courseId}/content`)
       const data = await response.json()
       
       if (data.success) {
