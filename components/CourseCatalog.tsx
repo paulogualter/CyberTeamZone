@@ -19,97 +19,7 @@ interface PaginationData {
   hasPrev: boolean
 }
 
-// Mock data - in production this would come from API
-const mockCourses: Course[] = [
-  {
-    id: '1',
-    title: 'Basic Course',
-    description: 'System introduction',
-    shortDescription: 'System introduction',
-    instructor: { id: '1', name: 'CyberTeam', email: 'cyberteam@example.com', isActive: true, createdAt: new Date(), updatedAt: new Date() },
-    difficulty: 'BEGINNER',
-    duration: 60,
-    price: 1.00,
-    escudosPrice: 100,
-    coverImage: '/images/curso-basico.jpg',
-    videoUrl: '',
-    isPublished: true,
-    isFree: false,
-    status: 'ACTIVE',
-    courseType: 'RECORDED',
-    categoryId: 'all',
-    instructorId: '1',
-    rating: 4.5,
-    enrolledCount: 101,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '2',
-    title: 'Network Defense and Monitoring',
-    description: 'Learn to build robust network defense systems, implement monitoring solutions, and detect threats in real-time.',
-    shortDescription: 'Learn to build robust network defense systems...',
-    instructor: { id: '1', name: 'CyberTeam', email: 'cyberteam@example.com', isActive: true, createdAt: new Date(), updatedAt: new Date() },
-    difficulty: 'BEGINNER',
-    duration: 360,
-    price: 1.00,
-    escudosPrice: 100,
-    coverImage: '/images/network-defense.jpg',
-    videoUrl: '',
-    isPublished: true,
-    isFree: false,
-    status: 'ACTIVE',
-    courseType: 'ONLINE',
-    categoryId: 'network-security',
-    instructorId: '1',
-    rating: 4.5,
-    enrolledCount: 100,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '3',
-    title: 'Advanced Web Application Penetration Testing',
-    description: 'Comprehensive course covering OWASP Top 10, advanced exploitation techniques, and modern web application security.',
-    shortDescription: 'Comprehensive course covering OWASP Top 10...',
-    instructor: { id: '1', name: 'CyberTeam', email: 'cyberteam@example.com', isActive: true, createdAt: new Date(), updatedAt: new Date() },
-    difficulty: 'BEGINNER',
-    duration: 480,
-    price: 1.00,
-    escudosPrice: 1000,
-    coverImage: '/images/web-app-security.jpg',
-    videoUrl: '',
-    isPublished: true,
-    isFree: false,
-    status: 'ACTIVE',
-    courseType: 'HYBRID',
-    categoryId: 'web-app-security',
-    instructorId: '1',
-    rating: 4.5,
-    enrolledCount: 100,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-]
-
-const mockCategories: Category[] = [
-  { id: 'all', name: 'All Categories', description: 'All available courses', icon: '🔍', color: '#6366f1', courseCount: 0 },
-  { id: 'clx1234567890abcde1', name: 'Penetration Testing', description: 'Ethical hacking and penetration testing courses', icon: '🎯', color: '#EF4444', courseCount: 0 },
-  { id: 'clx1234567890abcde2', name: 'Network Security', description: 'Network defense and monitoring courses', icon: '🛡️', color: '#10B981', courseCount: 0 },
-  { id: 'clx1234567890abcde3', name: 'Web Application Security', description: 'Web application security and OWASP courses', icon: '🌐', color: '#F59E0B', courseCount: 0 },
-  { id: 'clx1234567890abcde4', name: 'Incident Response', description: 'Incident response and forensics courses', icon: '🚨', color: '#8B5CF6', courseCount: 0 },
-  { id: 'clx1234567890abcde5', name: 'Social Engineering', description: 'Social engineering awareness and prevention', icon: '👥', color: '#EC4899', courseCount: 0 },
-  { id: 'clx1234567890abcde6', name: 'Malware Analysis', description: 'Malware analysis and reverse engineering', icon: '🦠', color: '#F97316', courseCount: 0 },
-  { id: 'clx1234567890abcde7', name: 'Digital Forensics', description: 'Digital forensics and evidence collection', icon: '🔍', color: '#06B6D4', courseCount: 0 },
-  { id: 'clx1234567890abcde8', name: 'Cryptography', description: 'Cryptography and encryption techniques', icon: '🔐', color: '#84CC16', courseCount: 0 },
-  { id: 'clx1234567890abcde9', name: 'Red Team Operations', description: 'Red team exercises and attack simulation', icon: '🔴', color: '#DC2626', courseCount: 0 },
-  { id: 'clx1234567890abcdea', name: 'Blue Team Defense', description: 'Blue team defense and monitoring', icon: '🔵', color: '#2563EB', courseCount: 0 },
-  { id: 'clx1234567890abcdeb', name: 'Cloud Security', description: 'Cloud security and infrastructure protection', icon: '☁️', color: '#7C3AED', courseCount: 0 },
-  { id: 'clx1234567890abcdec', name: 'Threat Intelligence', description: 'Threat intelligence and analysis', icon: '📊', color: '#059669', courseCount: 0 },
-  { id: 'clx1234567890abcded', name: 'IoT Security', description: 'Internet of Things security', icon: '🌐', color: '#10B981', courseCount: 0 },
-  { id: 'clx1234567890abcdee', name: 'Mobile Security', description: 'Mobile device and application security', icon: '📱', color: '#F59E0B', courseCount: 0 },
-  { id: 'clx1234567890abcdef', name: 'Compliance & Governance', description: 'Security compliance and governance frameworks', icon: '📋', color: '#6B7280', courseCount: 0 },
-]
+// Removed mock data - using real API data only
 
 export default function CourseCatalog() {
   const { data: session } = useSession()
@@ -175,22 +85,22 @@ export default function CourseCatalog() {
           setCourses(transformedCourses)
           setFilteredCourses(transformedCourses)
         } else {
-          // Fallback to mock data if no courses found
-          console.log('No courses found, using mock data')
-          setCourses(mockCourses)
-          setFilteredCourses(mockCourses)
+          // No courses found
+          console.log('No courses found')
+          setCourses([])
+          setFilteredCourses([])
         }
         
-        // Always use mock data for now to test frontend
-        console.log('Using mock categories for testing')
-        setCategories(mockCategories)
+        // Use API categories
+        console.log('Using API categories')
+        setCategories(apiCategories)
         
       } catch (error) {
         console.error('Error fetching data:', error)
-        // Fallback to mock data on error
-        setCourses(mockCourses)
-        setCategories(mockCategories)
-        setFilteredCourses(mockCourses)
+        // No fallback to mock data - show empty state
+        setCourses([])
+        setCategories([])
+        setFilteredCourses([])
       } finally {
         setLoading(false)
       }

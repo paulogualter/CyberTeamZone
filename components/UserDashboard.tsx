@@ -16,70 +16,7 @@ import SmartCourseImage from './SmartCourseImage'
 import { Course, UserProgress } from '@/types'
 import { useUserEscudos } from '@/hooks/useUserEscudos'
 
-// Mock data - in production this would come from API
-const mockEnrolledCourses: any[] = [
-  {
-    id: '1',
-    title: 'Curso Básico',
-    description: 'Introdução ao sistema',
-    shortDescription: 'Introdução ao sistema',
-    instructor: { id: 'instructor_1', name: 'CyberTeam', email: 'admin@cyberteam.zone' } as any,
-    difficulty: 'BEGINNER',
-    duration: 60,
-    price: 1.00,
-    escudosPrice: 100,
-    coverImage: '/images/curso-basico.jpg',
-    videoUrl: '',
-    isPublished: true,
-    isFree: false,
-    categoryId: 'all',
-    rating: 4.5,
-    enrolledCount: 101,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '2',
-    title: 'Network Defense and Monitoring',
-    description: 'Learn to build robust network defense systems',
-    shortDescription: 'Learn to build robust network defense systems...',
-    instructor: { id: 'instructor_1', name: 'CyberTeam', email: 'admin@cyberteam.zone' } as any,
-    difficulty: 'BEGINNER',
-    duration: 360,
-    price: 1.00,
-    escudosPrice: 100,
-    coverImage: '/images/network-defense.jpg',
-    videoUrl: '',
-    isPublished: true,
-    isFree: false,
-    categoryId: 'network-security',
-    rating: 4.5,
-    enrolledCount: 100,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-]
-
-const mockProgress: UserProgress[] = [
-  {
-    id: '1',
-    completed: false,
-    progress: 45,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    userId: '1',
-    courseId: '1',
-  },
-  {
-    id: '2',
-    completed: false,
-    progress: 20,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    userId: '1',
-    courseId: '2',
-  },
-]
+// Removed mock data - using real API data only
 
 export default function UserDashboard() {
   const { data: session } = useSession()
@@ -120,9 +57,8 @@ export default function UserDashboard() {
         }
       } catch (error) {
         console.error('Error fetching user courses:', error)
-        // Fallback to mock data if API fails
-        setEnrolledCourses(mockEnrolledCourses)
-        setProgress(mockProgress)
+        setEnrolledCourses([])
+        setProgress([])
       } finally {
         setIsLoading(false)
       }

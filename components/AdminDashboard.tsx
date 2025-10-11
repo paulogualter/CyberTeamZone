@@ -22,46 +22,7 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 import Breadcrumb from './Breadcrumb'
 
-// Mock data - in production this would come from API
-const mockStats = {
-  totalRevenue: 125430.50,
-  monthlyRevenue: 15420.30,
-  totalStudents: 1247,
-  activeSubscriptions: 892,
-  totalCourses: 15,
-  completionRate: 78.5,
-  newStudentsThisMonth: 156,
-  averageCourseRating: 4.6,
-}
-
-const mockRevenueData = [
-  { month: 'Jan', revenue: 12000, subscriptions: 45 },
-  { month: 'Fev', revenue: 15000, subscriptions: 52 },
-  { month: 'Mar', revenue: 18000, subscriptions: 61 },
-  { month: 'Abr', revenue: 22000, subscriptions: 73 },
-  { month: 'Mai', revenue: 19500, subscriptions: 68 },
-  { month: 'Jun', revenue: 25000, subscriptions: 82 },
-  { month: 'Jul', revenue: 28000, subscriptions: 91 },
-  { month: 'Ago', revenue: 32000, subscriptions: 105 },
-  { month: 'Set', revenue: 29000, subscriptions: 96 },
-  { month: 'Out', revenue: 35000, subscriptions: 115 },
-  { month: 'Nov', revenue: 38000, subscriptions: 125 },
-  { month: 'Dez', revenue: 42000, subscriptions: 138 },
-]
-
-const mockCourseStats = [
-  { name: 'Curso Básico', enrollments: 101, revenue: 10100, completionRate: 85 },
-  { name: 'Network Defense', enrollments: 89, revenue: 8900, completionRate: 72 },
-  { name: 'Web App Security', enrollments: 76, revenue: 7600, completionRate: 68 },
-  { name: 'Penetration Testing', enrollments: 65, revenue: 19500, completionRate: 78 },
-  { name: 'Incident Response', enrollments: 54, revenue: 16200, completionRate: 82 },
-]
-
-const mockSubscriptionData = [
-  { name: 'Basic', value: 45, color: '#3B82F6' },
-  { name: 'Gold', value: 35, color: '#F59E0B' },
-  { name: 'Diamond', value: 20, color: '#8B5CF6' },
-]
+// Removed mock data - using real API data only
 
 interface StudentMetrics {
   totalStudents: number

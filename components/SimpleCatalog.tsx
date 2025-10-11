@@ -38,36 +38,16 @@ export default function SimpleCatalog() {
             ]
             setCategories(transformedCategories)
           } else {
-            // Fallback to mock data if no categories found
-            const mockCategories = [
-              { id: 'all', name: 'All Categories', description: 'All available courses', icon: '🔍', color: '#6366f1', courseCount: 0 },
-              { id: '1', name: 'Penetration Testing', description: 'Ethical hacking courses', icon: '🎯', color: '#EF4444', courseCount: 0 },
-              { id: '2', name: 'Network Security', description: 'Network defense courses', icon: '🛡️', color: '#10B981', courseCount: 0 },
-              { id: '3', name: 'Web App Security', description: 'Web application security', icon: '🌐', color: '#F59E0B', courseCount: 0 }
-            ]
-            setCategories(mockCategories)
+            // No categories found
+            setCategories([])
           }
         } else {
           console.error('Failed to fetch categories')
-          // Fallback to mock data on error
-          const mockCategories = [
-            { id: 'all', name: 'All Categories', description: 'All available courses', icon: '🔍', color: '#6366f1', courseCount: 0 },
-            { id: '1', name: 'Penetration Testing', description: 'Ethical hacking courses', icon: '🎯', color: '#EF4444', courseCount: 0 },
-            { id: '2', name: 'Network Security', description: 'Network defense courses', icon: '🛡️', color: '#10B981', courseCount: 0 },
-            { id: '3', name: 'Web App Security', description: 'Web application security', icon: '🌐', color: '#F59E0B', courseCount: 0 }
-          ]
-          setCategories(mockCategories)
+          setCategories([])
         }
       } catch (error) {
         console.error('Error fetching categories:', error)
-        // Fallback to mock data on error
-        const mockCategories = [
-          { id: 'all', name: 'All Categories', description: 'All available courses', icon: '🔍', color: '#6366f1', courseCount: 0 },
-          { id: '1', name: 'Penetration Testing', description: 'Ethical hacking courses', icon: '🎯', color: '#EF4444', courseCount: 0 },
-          { id: '2', name: 'Network Security', description: 'Network defense courses', icon: '🛡️', color: '#10B981', courseCount: 0 },
-          { id: '3', name: 'Web App Security', description: 'Web application security', icon: '🌐', color: '#F59E0B', courseCount: 0 }
-        ]
-        setCategories(mockCategories)
+        setCategories([])
       } finally {
         setLoading(false)
       }
