@@ -23,6 +23,7 @@ export async function GET(
         id,
         title,
         description,
+        approvalStatus,
         instructor:User(
           id,
           name,
@@ -31,11 +32,15 @@ export async function GET(
         )
       `)
       .eq('id', courseId)
-      .eq('approvalStatus', 'APPROVED')
       .single()
 
     if (courseErr || !course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 })
+    }
+
+    // Verificar se o curso está aprovado (exceto para admins)
+    if (course.approvalStatus !== 'APPROVED' && session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Course not approved' }, { status: 403 })
     }
 
     // Buscar módulos do curso
