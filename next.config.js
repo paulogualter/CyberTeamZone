@@ -31,7 +31,7 @@ const nextConfig = {
   // Configuração de output para melhor cache
   generateEtags: false,
   poweredByHeader: false,
-  // Remover CSP completamente - versão mais agressiva
+  // Remover CSP completamente - versão ultra-agressiva
   async headers() {
     return [
       {
@@ -39,7 +39,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: ''
+            value: "default-src * 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes'; style-src * 'unsafe-inline' 'unsafe-hashes'; img-src * data: blob:; font-src * data:; connect-src *; media-src * data: blob:; object-src *; child-src *; frame-src *; worker-src *; frame-ancestors *; form-action *; base-uri *;"
           },
           {
             key: 'Content-Security-Policy-Report-Only',
@@ -47,31 +47,43 @@ const nextConfig = {
           },
           {
             key: 'X-Content-Type-Options',
-            value: ''
+            value: 'nosniff'
           },
           {
             key: 'X-Frame-Options',
-            value: ''
+            value: 'SAMEORIGIN'
           },
           {
             key: 'Referrer-Policy',
-            value: ''
+            value: 'strict-origin-when-cross-origin'
           },
           {
             key: 'X-XSS-Protection',
-            value: ''
+            value: '1; mode=block'
           },
           {
             key: 'Cross-Origin-Embedder-Policy',
-            value: ''
+            value: 'unsafe-none'
           },
           {
             key: 'Cross-Origin-Opener-Policy',
-            value: ''
+            value: 'unsafe-none'
           },
           {
             key: 'Cross-Origin-Resource-Policy',
-            value: ''
+            value: 'cross-origin'
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*'
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS'
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: '*'
           }
         ],
       },
