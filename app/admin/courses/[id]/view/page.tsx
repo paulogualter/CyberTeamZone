@@ -248,11 +248,15 @@ export default function CourseViewer() {
                     <button
                       onClick={() => {
                         const firstLessonId = course.modules?.[0]?.lessons?.[0]?.id
-                        if (firstLessonId) {
-                          router.push(`/member/course/${course.id}/lesson/${firstLessonId}`)
-                        } else {
-                          router.push(`/member/course/${course.id}`)
-                        }
+                        const targetUrl = firstLessonId 
+                          ? `/member/course/${course.id}/lesson/${firstLessonId}`
+                          : `/member/course/${course.id}`
+                        
+                        console.log('🔍 Button clicked - Redirecting to:', targetUrl)
+                        console.log('🔍 Course ID:', course.id)
+                        console.log('🔍 First Lesson ID:', firstLessonId)
+                        
+                        router.push(targetUrl)
                       }}
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium"
                     >
