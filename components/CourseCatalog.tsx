@@ -93,7 +93,25 @@ export default function CourseCatalog() {
         
         // Use API categories
         console.log('Using API categories')
-        setCategories(apiCategories)
+        const apiCategories = (categoriesData.categories || []).map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          description: c.description,
+          icon: c.icon || '📚',
+          color: c.color || '#6366f1',
+          courseCount: c.courseCount || 0
+        }))
+        
+        // Calculate total courses for "All Categories"
+        const totalCourses = apiCategories.reduce((sum: number, category: any) => sum + (category.courseCount || 0), 0)
+        
+        // Add "All Categories" option
+        const transformedCategories = [
+          { id: 'all', name: 'All Categories', description: 'All available courses', icon: '🔍', color: '#6366f1', courseCount: totalCourses },
+          ...apiCategories
+        ]
+        
+        setCategories(transformedCategories)
         
       } catch (error) {
         console.error('Error fetching data:', error)
