@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Plus, Edit, Trash2, Play, Eye, EyeOff, Clock, BookOpen } from 'lucide-react'
+import { Plus, Edit, Trash2, Play, Eye, EyeOff, Clock, BookOpen, Video } from 'lucide-react'
 import ModuleModal from './ModuleModal'
+import { useRouter } from 'next/navigation'
 
 interface Module {
   id?: string
@@ -30,6 +31,7 @@ interface ModuleListProps {
 }
 
 export default function ModuleList({ courseId, courseTitle }: ModuleListProps) {
+  const router = useRouter()
   const [modules, setModules] = useState<Module[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -142,6 +144,10 @@ export default function ModuleList({ courseId, courseTitle }: ModuleListProps) {
       console.error('Erro ao excluir módulo:', error)
       throw error
     }
+  }
+
+  const handleManageLessons = (moduleId: string) => {
+    router.push(`/instructor/courses/${courseId}/modules/${moduleId}/lessons`)
   }
 
   const handleEditModule = (module: Module) => {
@@ -269,11 +275,29 @@ export default function ModuleList({ courseId, courseTitle }: ModuleListProps) {
                           </p>
                         </div>
                       )}
+
+                      {/* Manage Lessons Button */}
+                      <div className="mt-4">
+                        <button
+                          onClick={() => handleManageLessons(module.id!)}
+                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors"
+                        >
+                          <Video className="h-4 w-4 mr-2" />
+                          Gerenciar Aulas
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Actions */}
                   <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleManageLessons(module.id!)}
+                      className="p-2 text-gray-400 hover:text-green-400 hover:bg-green-600/20 rounded-lg transition-colors"
+                      title="Gerenciar Aulas"
+                    >
+                      <Video className="h-4 w-4" />
+                    </button>
                     <button
                       onClick={() => handleEditModule(module)}
                       className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-600/20 rounded-lg transition-colors"
