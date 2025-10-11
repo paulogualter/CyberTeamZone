@@ -40,7 +40,7 @@ export default function ModuleList({ courseId, courseTitle }: ModuleListProps) {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await fetch(`/api/instructor/modules?courseId=${courseId}`)
+      const response = await fetch(`/api/test-auth?courseId=${courseId}`)
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Failed to fetch modules')
