@@ -8,6 +8,11 @@ import { calculateMaxEscudosForPurchase, calculateRemainingAmount } from '@/lib/
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Stripe is available
+    if (!stripe) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
+    }
+
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
