@@ -143,21 +143,12 @@ export async function POST(req: NextRequest) {
 
     console.log('🔍 Verifying module exists...')
     
-    // Verificar se o módulo existe
-    let moduleQuery = supabaseAdmin
+    // Verificar se o módulo existe usando queries separadas
+    const { data: module, error: moduleErr } = await supabaseAdmin
       .from('Module')
-      .select(`
-        id,
-        course:Course(id, instructorId)
-      `)
+      .select('id, courseId')
       .eq('id', moduleId)
-
-    // Se for instrutor, verificar se o módulo pertence a um curso dele
-    if (userRole === 'INSTRUCTOR') {
-      moduleQuery = moduleQuery.eq('course.instructorId', session.user.id)
-    }
-
-    const { data: module, error: moduleErr } = await moduleQuery.single()
+      .single()
 
     console.log('📊 Module verification:', { module: !!module, error: moduleErr?.message })
 
@@ -167,6 +158,20 @@ export async function POST(req: NextRequest) {
         { error: 'Module not found' },
         { status: 404 }
       )
+    }
+
+    // Se for instrutor, verificar se o curso pertence a ele
+    if (userRole === 'INSTRUCTOR') {
+      const { data: course, error: courseErr } = await supabaseAdmin
+        .from('Course')
+        .select('id, instructorId')
+        .eq('id', module.courseId)
+        .single()
+
+      if (courseErr || !course || course.instructorId !== session.user.id) {
+        console.log('❌ Course not found or access denied for instructor:', courseErr?.message)
+        return NextResponse.json({ error: 'Course not found or access denied' }, { status: 404 })
+      }
     }
 
     // Próxima ordem se não informada
