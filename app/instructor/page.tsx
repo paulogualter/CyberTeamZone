@@ -247,7 +247,14 @@ export default function InstructorDashboard() {
                             Editar
                           </button>
                           <button
-                            onClick={() => router.push(`/instructor/courses/${course.id}`)}
+                            onClick={() => {
+                              // Vai para a área de membros
+                              if (course.modules && course.modules.length > 0 && course.modules[0]?.lessons && course.modules[0].lessons.length > 0) {
+                                router.push(`/member/course/${course.id}/lesson/${course.modules[0].lessons[0].id}`)
+                              } else {
+                                router.push(`/member/course/${course.id}`)
+                              }
+                            }}
                             className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
                           >
                             <EyeIcon className="h-4 w-4" />

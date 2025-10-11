@@ -364,10 +364,10 @@ export default function AdminCoursesPage() {
                       onClick={() => {
                         // Vai direto para a área de membros
                         if (course.modules && course.modules.length > 0 && course.modules[0]?.lessons && course.modules[0].lessons.length > 0) {
-                          router.push(`/course/${course.id}/lesson/${course.modules[0].lessons[0].id}`)
+                          router.push(`/member/course/${course.id}/lesson/${course.modules[0].lessons[0].id}`)
                         } else {
-                          // Se não houver módulos/aulas, vai para a primeira aula disponível
-                          router.push(`/course/${course.id}`)
+                          // Se não houver módulos/aulas, vai para a página do curso
+                          router.push(`/member/course/${course.id}`)
                         }
                       }}
                       className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
