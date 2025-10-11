@@ -7,30 +7,27 @@ export async function GET(req: NextRequest) {
     console.log('🔍 Debug session endpoint called')
     
     const session = await getServerSession(authOptions)
-    console.log('📋 Session details:', {
-      exists: !!session,
-      userId: session?.user?.id,
-      userEmail: session?.user?.email,
-      userRole: (session?.user as any)?.role,
-      sessionExpires: session?.expires
-    })
     
-    return NextResponse.json({
-      success: true,
-      session: {
-        exists: !!session,
+    return NextResponse.json({ 
+      debug: {
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        hasUserId: !!session?.user?.id,
         userId: session?.user?.id,
+        userName: session?.user?.name,
         userEmail: session?.user?.email,
         userRole: (session?.user as any)?.role,
-        sessionExpires: session?.expires
+        sessionKeys: session ? Object.keys(session) : [],
+        userKeys: session?.user ? Object.keys(session.user) : []
       }
     })
+
   } catch (error) {
     console.error('❌ Error in debug session:', error)
     return NextResponse.json(
       { 
         error: 'Internal server error', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
+        debug: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     )
