@@ -20,10 +20,23 @@ export function middleware(request: NextRequest) {
   response.headers.set('Cross-Origin-Opener-Policy', 'unsafe-none')
   response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin')
   
-  // Remover qualquer header de CSP que possa estar sendo adicionado pelo Next.js
-  response.headers.set('Content-Security-Policy', '')
+  // Definir CSP completamente permissivo
+  response.headers.set('Content-Security-Policy', 
+    "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+    "script-src * 'unsafe-inline' 'unsafe-eval'; " +
+    "style-src * 'unsafe-inline'; " +
+    "img-src * data: blob:; " +
+    "font-src *; " +
+    "connect-src *; " +
+    "media-src *; " +
+    "object-src *; " +
+    "child-src *; " +
+    "frame-src *; " +
+    "worker-src *; " +
+    "frame-ancestors *;"
+  )
   
-  console.log('✅ Middleware: Security headers removed for:', request.url)
+  console.log('✅ Middleware: CSP set to permissive for:', request.url)
   
   return response
 }

@@ -217,3 +217,93 @@ export async function DELETE(req: NextRequest) {
     )
   }
 }
+
+export async function PUT(req: NextRequest) {
+  try {
+    console.log('🔍 Test lessons PUT endpoint called')
+    
+    const body = await req.json()
+    const { id, title, content, type, duration, order, videoUrl, attachment, moduleId, isPublished } = body
+
+    // Validação básica
+    if (!id || !title || !content || !type || !moduleId) {
+      return NextResponse.json(
+        { error: 'ID, title, content, type and moduleId are required' },
+        { status: 400 }
+      )
+    }
+
+    // Verificar se a aula existe
+    const { data: existingLesson, error: lessonErr } = await supabaseAdmin
+      .from('Lesson')
+      .select('id, title, moduleId')
+      .eq('id', id)
+      .single()
+
+    if (lessonErr || !existingLesson) {
+      return NextResponse.json(
+        { error: 'Lesson not found' },
+        { status: 404 }
+      )
+    }
+
+    // Verificar se o módulo existe
+    const { data: module, error: moduleErr } = await supabaseAdmin
+      .from('Module')
+      .select('id, title, courseId')
+      .eq('id', moduleId)
+      .single()
+
+    if (moduleErr || !module) {
+      return NextResponse.json(
+        { error: 'Module not found' },
+        { status: 404 }
+      )
+    }
+
+    const nowIso = new Date().toISOString()
+
+    // Atualizar aula
+    const { data: updated, error: updateErr } = await supabaseAdmin
+      .from('Lesson')
+      .update({
+        title,
+        content,
+        type,
+        duration: duration || 0,
+        order: order || 1,
+        videoUrl: videoUrl || null,
+        attachment: attachment || null,
+        isPublished: isPublished || false,
+        updatedAt: nowIso
+      })
+      .eq('id', id)
+      .select('*')
+      .single()
+
+    if (updateErr) {
+      console.error('Error updating lesson:', updateErr)
+      return NextResponse.json({ error: 'Failed to update lesson', debug: updateErr.message }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      lesson: updated,
+      debug: {
+        lessonId: id,
+        moduleId: moduleId,
+        updatedAt: nowIso
+      }
+    })
+
+  } catch (error) {
+    console.error('❌ Error in test lessons PUT:', error)
+    return NextResponse.json(
+      { 
+        error: 'Internal server error', 
+        debug: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    )
+  }
+}
