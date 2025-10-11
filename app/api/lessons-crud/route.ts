@@ -19,10 +19,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Module ID is required' }, { status: 400 })
     }
 
-    // Verificar se o módulo existe e se o usuário tem acesso
+    // Verificar se o módulo existe
     const { data: module, error: moduleErr } = await supabaseAdmin
       .from('Module')
-      .select('id, courseId, course:Course(instructorId)')
+      .select('id, courseId')
       .eq('id', moduleId)
       .single()
 
@@ -30,10 +30,21 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 })
     }
 
+    // Buscar dados do curso separadamente
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from('Course')
+      .select('id, instructorId')
+      .eq('id', module.courseId)
+      .single()
+
+    if (courseErr || !course) {
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 })
+    }
+
     // Verificar permissões
     const userRole = (session.user as any)?.role
     const isAdmin = userRole === 'ADMIN'
-    const isInstructor = userRole === 'INSTRUCTOR' && module.course?.instructorId === session.user.id
+    const isInstructor = userRole === 'INSTRUCTOR' && course.instructorId === session.user.id
 
     if (!isAdmin && !isInstructor) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -135,7 +146,7 @@ export async function POST(req: NextRequest) {
     console.log('🔍 Verifying module exists...')
     const { data: module, error: moduleErr } = await supabaseAdmin
       .from('Module')
-      .select('id, courseId, course:Course(instructorId)')
+      .select('id, courseId')
       .eq('id', moduleId)
       .single()
 
@@ -149,8 +160,23 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Buscar dados do curso separadamente
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from('Course')
+      .select('id, instructorId')
+      .eq('id', module.courseId)
+      .single()
+
+    if (courseErr || !course) {
+      console.log('❌ Course not found:', courseErr?.message)
+      return NextResponse.json(
+        { error: 'Course not found' },
+        { status: 404 }
+      )
+    }
+
     // Verificar permissões específicas para instrutores
-    if (userRole === 'INSTRUCTOR' && module.course?.instructorId !== session.user.id) {
+    if (userRole === 'INSTRUCTOR' && course.instructorId !== session.user.id) {
       console.log('❌ Instructor not authorized for this course')
       return NextResponse.json(
         { error: 'You can only create lessons for your own courses' },
@@ -281,10 +307,10 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Lesson ID is required' }, { status: 400 })
     }
 
-    // Verificar se a aula existe e se o usuário tem acesso
+    // Verificar se a aula existe
     const { data: existingLesson, error: lessonErr } = await supabaseAdmin
       .from('Lesson')
-      .select('id, moduleId, module:Module(courseId, course:Course(instructorId))')
+      .select('id, moduleId')
       .eq('id', id)
       .single()
 
@@ -292,8 +318,29 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
     }
 
+    // Buscar dados do módulo e curso separadamente
+    const { data: module, error: moduleErr } = await supabaseAdmin
+      .from('Module')
+      .select('id, courseId')
+      .eq('id', existingLesson.moduleId)
+      .single()
+
+    if (moduleErr || !module) {
+      return NextResponse.json({ error: 'Module not found' }, { status: 404 })
+    }
+
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from('Course')
+      .select('id, instructorId')
+      .eq('id', module.courseId)
+      .single()
+
+    if (courseErr || !course) {
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 })
+    }
+
     // Verificar permissões específicas para instrutores
-    if (userRole === 'INSTRUCTOR' && existingLesson.module?.course?.instructorId !== session.user.id) {
+    if (userRole === 'INSTRUCTOR' && course.instructorId !== session.user.id) {
       return NextResponse.json(
         { error: 'You can only edit lessons from your own courses' },
         { status: 403 }
@@ -366,10 +413,10 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Lesson ID is required' }, { status: 400 })
     }
 
-    // Verificar se a aula existe e se o usuário tem acesso
+    // Verificar se a aula existe
     const { data: existingLesson, error: lessonErr } = await supabaseAdmin
       .from('Lesson')
-      .select('id, moduleId, module:Module(courseId, course:Course(instructorId))')
+      .select('id, moduleId')
       .eq('id', lessonId)
       .single()
 
@@ -377,8 +424,29 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
     }
 
+    // Buscar dados do módulo e curso separadamente
+    const { data: module, error: moduleErr } = await supabaseAdmin
+      .from('Module')
+      .select('id, courseId')
+      .eq('id', existingLesson.moduleId)
+      .single()
+
+    if (moduleErr || !module) {
+      return NextResponse.json({ error: 'Module not found' }, { status: 404 })
+    }
+
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from('Course')
+      .select('id, instructorId')
+      .eq('id', module.courseId)
+      .single()
+
+    if (courseErr || !course) {
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 })
+    }
+
     // Verificar permissões específicas para instrutores
-    if (userRole === 'INSTRUCTOR' && existingLesson.module?.course?.instructorId !== session.user.id) {
+    if (userRole === 'INSTRUCTOR' && course.instructorId !== session.user.id) {
       return NextResponse.json(
         { error: 'You can only delete lessons from your own courses' },
         { status: 403 }
