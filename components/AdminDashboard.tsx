@@ -251,7 +251,7 @@ export default function AdminDashboard() {
             <CurrencyDollarIcon className="h-8 w-8 text-green-500" />
             <div className="ml-4">
               <p className="text-sm text-gray-400">Receita Total</p>
-              <p className="text-2xl font-bold text-white">{formatCurrency(mockStats.totalRevenue)}</p>
+              <p className="text-2xl font-bold text-white">{formatCurrency(0)}</p>
             </div>
           </div>
         </div>
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
             <UsersIcon className="h-8 w-8 text-blue-500" />
             <div className="ml-4">
               <p className="text-sm text-gray-400">Total de Alunos</p>
-              <p className="text-2xl font-bold text-white">{formatNumber(mockStats.totalStudents)}</p>
+              <p className="text-2xl font-bold text-white">{formatNumber(0)}</p>
             </div>
           </div>
         </div>
@@ -271,7 +271,7 @@ export default function AdminDashboard() {
             <BookOpenIcon className="h-8 w-8 text-purple-500" />
             <div className="ml-4">
               <p className="text-sm text-gray-400">Cursos Ativos</p>
-              <p className="text-2xl font-bold text-white">{mockStats.totalCourses}</p>
+              <p className="text-2xl font-bold text-white">0</p>
             </div>
           </div>
         </div>
@@ -281,7 +281,7 @@ export default function AdminDashboard() {
             <TrophyIcon className="h-8 w-8 text-yellow-500" />
             <div className="ml-4">
               <p className="text-sm text-gray-400">Taxa de Conclusão</p>
-              <p className="text-2xl font-bold text-white">{mockStats.completionRate}%</p>
+              <p className="text-2xl font-bold text-white">0%</p>
             </div>
           </div>
         </div>
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
               <div className="bg-slate-700/50 rounded-lg p-6">
                 <h3 className="text-xl font-semibold text-white mb-4">Receita Mensal</h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={mockRevenueData}>
+                  <LineChart data={[]}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis dataKey="month" stroke="#9CA3AF" />
                     <YAxis stroke="#9CA3AF" />
@@ -355,7 +355,7 @@ export default function AdminDashboard() {
                 <div className="bg-slate-700/50 rounded-lg p-6">
                   <h3 className="text-xl font-semibold text-white mb-4">Performance dos Cursos</h3>
                   <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={mockCourseStats}>
+                    <BarChart data={[]}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                       <XAxis dataKey="name" stroke="#9CA3AF" />
                       <YAxis stroke="#9CA3AF" />
@@ -377,7 +377,7 @@ export default function AdminDashboard() {
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
                       <Pie
-                        data={mockSubscriptionData}
+                        data={[]}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
@@ -385,8 +385,8 @@ export default function AdminDashboard() {
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {mockSubscriptionData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        {[].map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill="#3B82F6" />
                         ))}
                       </Pie>
                       <Tooltip 
@@ -462,19 +462,19 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-600">
-                    {mockCourseStats.map((course, index) => (
+                    {[].map((course: any, index: number) => (
                       <tr key={index} className="hover:bg-slate-600/50">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-white">{course.name}</div>
+                          <div className="text-sm font-medium text-white">Nenhum curso</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                          {course.enrollments}
+                          0
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                          {formatCurrency(course.revenue)}
+                          {formatCurrency(0)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                          {course.completionRate}%
+                          0%
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
