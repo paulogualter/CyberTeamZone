@@ -5,15 +5,15 @@ import { Plus, Edit, Trash2, Play, Eye, EyeOff, Clock, BookOpen } from 'lucide-r
 import ModuleModal from './ModuleModal'
 
 interface Module {
-  id: string
+  id?: string
   title: string
   description: string
   order: number
   isPublished: boolean
   courseId: string
   lessons?: Lesson[]
-  createdAt: string
-  updatedAt: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 interface Lesson {
@@ -113,7 +113,8 @@ export default function ModuleList({ courseId, courseTitle }: ModuleListProps) {
 
   const handleCreateModule = async (moduleData: Module) => {
     try {
-      await createModule(moduleData)
+      const { id, createdAt, updatedAt, ...createData } = moduleData
+      await createModule(createData)
       setIsModalOpen(false)
     } catch (error) {
       console.error('Erro ao criar módulo:', error)
@@ -123,7 +124,9 @@ export default function ModuleList({ courseId, courseTitle }: ModuleListProps) {
 
   const handleUpdateModule = async (moduleData: Module) => {
     try {
-      await updateModule(moduleData.id!, moduleData)
+      if (!moduleData.id) throw new Error('Module ID is required')
+      const { id, createdAt, updatedAt, ...updateData } = moduleData
+      await updateModule(id, updateData)
       setIsModalOpen(false)
       setEditingModule(null)
     } catch (error) {
@@ -255,7 +258,7 @@ export default function ModuleList({ courseId, courseTitle }: ModuleListProps) {
                           </div>
                         )}
                         <div className="flex items-center space-x-1">
-                          <span>Criado em {new Date(module.createdAt).toLocaleDateString('pt-BR')}</span>
+                          <span>Criado em {module.createdAt ? new Date(module.createdAt).toLocaleDateString('pt-BR') : 'N/A'}</span>
                         </div>
                       </div>
 
@@ -279,7 +282,7 @@ export default function ModuleList({ courseId, courseTitle }: ModuleListProps) {
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => handleDeleteModule(module.id)}
+                      onClick={() => handleDeleteModule(module.id!)}
                       className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-600/20 rounded-lg transition-colors"
                       title="Excluir módulo"
                     >
