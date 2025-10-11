@@ -1,61 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// GET - Teste sem autenticação para verificar se o problema é de auth ou lógica
 export async function GET(req: NextRequest) {
   try {
-    console.log('🔍 Test modules endpoint called')
+    console.log('🔍 Simple test modules endpoint called')
     
     const { searchParams } = new URL(req.url)
     const courseId = searchParams.get('courseId')
-    console.log('📚 Course ID:', courseId)
-
+    
     if (!courseId) {
-      return NextResponse.json({ error: 'Course ID is required' }, { status: 400 })
+      return NextResponse.json({ 
+        error: 'Course ID is required'
+      }, { status: 400 })
     }
 
-    console.log('🔗 Fetching modules from Supabase...')
-    
-    // Buscar módulos do curso sem verificação de permissões
+    // Verificar se o curso existe
+    const { data: course, error: courseErr } = await supabaseAdmin
+      .from('Course')
+      .select('id, title, instructorId')
+      .eq('id', courseId)
+      .single()
+
+    if (courseErr || !course) {
+      return NextResponse.json({ 
+        error: 'Course not found',
+        debug: courseErr?.message,
+        courseId: courseId
+      }, { status: 404 })
+    }
+
+    // Buscar módulos do curso
     const { data: modules, error: modErr } = await supabaseAdmin
       .from('Module')
-      .select(`
-        *,
-        lessons:Lesson(*),
-        course:Course(id, title, instructorId)
-      `)
+      .select('*')
       .eq('courseId', courseId)
       .order('order', { ascending: true })
 
-    console.log('📊 Supabase result:', { modules: modules?.length || 0, error: modErr?.message })
-
-    if (modErr) {
-      console.error('❌ Error fetching modules:', modErr)
-      return NextResponse.json({ 
-        error: 'Failed to fetch modules',
-        debug: { supabaseError: modErr.message }
-      }, { status: 500 })
-    }
-
-    console.log('✅ Modules fetched successfully:', modules?.length || 0)
     return NextResponse.json({ 
       success: true, 
-      modules: modules || [],
       debug: {
-        courseId,
+        courseId: courseId,
+        course: {
+          id: course.id,
+          title: course.title,
+          instructorId: course.instructorId
+        },
+        modules: modules || [],
         modulesCount: modules?.length || 0,
-        modules: modules?.map(m => ({ id: m.id, title: m.title, courseId: m.courseId }))
-      }
+        modulesError: modErr?.message
+      },
+      modules: modules || []
     })
+
   } catch (error) {
-    console.error('❌ Error in test modules GET:', error)
+    console.error('❌ Error in simple test modules:', error)
     return NextResponse.json(
       { 
         error: 'Internal server error', 
-        debug: {
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
-        }
+        debug: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     )
