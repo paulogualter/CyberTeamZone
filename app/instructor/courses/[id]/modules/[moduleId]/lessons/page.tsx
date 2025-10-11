@@ -22,11 +22,14 @@ export default function ModuleLessons() {
 
   const fetchModuleData = async () => {
     try {
-      const response = await fetch(`/api/instructor/modules/${moduleId}`)
+      const response = await fetch(`/api/test-auth?courseId=${courseId}`)
       const data = await response.json()
       
       if (data.success) {
-        setModule(data.module)
+        const foundModule = data.modules.find((m: any) => m.id === moduleId)
+        if (foundModule) {
+          setModule(foundModule)
+        }
       }
     } catch (error) {
       console.error('Error fetching module:', error)
