@@ -32,7 +32,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           <OAuthHandler />
-          {/* <AdminRedirect /> */}
+          <AdminRedirect />
           {children}
           <Footer />
           <NotificationProvider />
