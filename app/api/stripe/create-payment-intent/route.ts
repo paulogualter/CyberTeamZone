@@ -61,6 +61,10 @@ export async function POST(request: NextRequest) {
 }
 
 async function createSubscriptionPaymentIntent(userId: string, planId: string) {
+  if (!stripe) {
+    throw new Error('Stripe not configured')
+  }
+
   // Buscar plano no banco
   const { data: plan, error: planErr } = await supabaseAdmin
     .from('Subscription')
@@ -91,6 +95,10 @@ async function createSubscriptionPaymentIntent(userId: string, planId: string) {
 }
 
 async function createCoursePaymentIntent(userId: string, courseId: string, amount: number, escudosToUse: number, currency: string) {
+  if (!stripe) {
+    throw new Error('Stripe not configured')
+  }
+
   // Buscar curso no banco
   const { data: course, error: courseErr } = await supabaseAdmin
     .from('Course')

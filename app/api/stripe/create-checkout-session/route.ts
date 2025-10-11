@@ -51,6 +51,10 @@ export async function POST(request: NextRequest) {
 }
 
 async function createSubscriptionCheckout(userId: string, planId: string, userEmail?: string) {
+  if (!stripe) {
+    throw new Error('Stripe not configured')
+  }
+
   console.log('🔍 Debug: Looking for plan:', planId)
   
   // Normalizar o nome do plano (primeira letra maiúscula)
@@ -132,6 +136,10 @@ async function createSubscriptionCheckout(userId: string, planId: string, userEm
 }
 
 async function createCourseCheckout(userId: string, courseId: string, amount: number, escudosToUse: number, userEmail?: string) {
+  if (!stripe) {
+    throw new Error('Stripe not configured')
+  }
+
   // Buscar curso no banco
   const { data: course, error: courseError } = await supabaseAdmin
     .from('Course')
