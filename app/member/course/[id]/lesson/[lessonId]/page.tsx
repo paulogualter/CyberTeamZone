@@ -75,7 +75,7 @@ export default function MemberLessonViewer() {
     try {
       console.log('🔍 Fetching real course data for:', courseId)
       
-      const response = await fetch(`/api/test/lessons?courseId=${courseId}`)
+      const response = await fetch(`/api/course-content?courseId=${courseId}`)
       const data = await response.json()
       
       console.log('📝 Course data response:', data)
