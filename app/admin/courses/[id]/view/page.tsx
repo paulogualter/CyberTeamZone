@@ -249,7 +249,9 @@ export default function CourseViewer() {
                       onClick={() => {
                         const firstLessonId = course.modules?.[0]?.lessons?.[0]?.id
                         if (firstLessonId) {
-                          router.push(`/course/${course.id}/lesson/${firstLessonId}`)
+                          router.push(`/member/course/${course.id}/lesson/${firstLessonId}`)
+                        } else {
+                          router.push(`/member/course/${course.id}`)
                         }
                       }}
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium"

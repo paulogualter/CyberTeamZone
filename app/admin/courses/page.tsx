@@ -362,11 +362,11 @@ export default function AdminCoursesPage() {
                     </button>
                     <button
                       onClick={() => {
-                        // Vai direto para a área de membros usando o endpoint de admin
-                        router.push(`/member/course/${course.id}/lesson/view`)
+                        // Vai para a página de visualização existente
+                        router.push(`/admin/courses/${course.id}/view`)
                       }}
                       className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-                      title="Acessar área de membros"
+                      title="Visualizar curso"
                     >
                       <EyeSlashIcon className="h-4 w-4" />
                       Visualizar
