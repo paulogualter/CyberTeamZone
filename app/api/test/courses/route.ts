@@ -5,7 +5,23 @@ export async function GET(req: NextRequest) {
   try {
     console.log('🔍 Fetching all courses...')
 
-    // Buscar todos os cursos com módulos e aulas
+    // Primeiro, testar conexão básica com Supabase
+    const { data: testData, error: testError } = await supabaseAdmin
+      .from('Course')
+      .select('id, title')
+      .limit(1)
+
+    console.log('🧪 Test query result:', { testData, testError })
+
+    if (testError) {
+      console.error('❌ Supabase connection error:', testError)
+      return NextResponse.json({ 
+        error: 'Database connection failed', 
+        debug: testError.message 
+      }, { status: 500 })
+    }
+
+    // Se a conexão básica funcionar, buscar dados completos
     const { data: courses, error: coursesErr } = await supabaseAdmin
       .from('Course')
       .select(`
@@ -43,7 +59,10 @@ export async function GET(req: NextRequest) {
 
     if (coursesErr) {
       console.error('Error fetching courses:', coursesErr)
-      return NextResponse.json({ error: 'Failed to fetch courses' }, { status: 500 })
+      return NextResponse.json({ 
+        error: 'Failed to fetch courses', 
+        debug: coursesErr.message 
+      }, { status: 500 })
     }
 
     // Ordenar módulos e aulas
@@ -68,7 +87,7 @@ export async function GET(req: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error in GET /api/test/courses:', error)
+    console.error('❌ Error in GET /api/test/courses:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
       { error: 'Internal server error', debug: errorMessage },
