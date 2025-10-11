@@ -72,19 +72,46 @@ export default function MemberLessonViewer() {
 
   const fetchCourseData = async () => {
     try {
-      const response = await fetch(`/api/test/courses/${courseId}/content`)
-      const data = await response.json()
-      
-      if (data.success) {
-        setCourse(data.course)
-        const lesson = data.course.modules
-          .flatMap((m: Module) => m.lessons)
-          .find((l: Lesson) => l.id === lessonId)
-        setCurrentLesson(lesson)
+      // Simular dados do curso para teste
+      const mockCourse: Course = {
+        id: courseId,
+        title: 'Curso de Teste',
+        description: 'Este é um curso de teste para desenvolvimento.',
+        instructor: {
+          id: 'instructor-1',
+          name: 'Instrutor Teste',
+          bio: 'Instrutor especializado em cibersegurança.',
+          avatar: ''
+        },
+        modules: [
+          {
+            id: 'module-1',
+            title: 'Módulo 1',
+            order: 1,
+            lessons: [
+              {
+                id: lessonId,
+                title: 'Aula de Teste',
+                content: '<p>Esta é uma aula de teste com conteúdo HTML.</p>',
+                videoUrl: 'data:video/mp4;base64,test-video-data',
+                duration: 30,
+                order: 1,
+                type: 'VIDEO',
+                isPublished: true,
+                createdAt: new Date().toISOString()
+              }
+            ]
+          }
+        ]
       }
+      
+      setCourse(mockCourse)
+      const lesson = mockCourse.modules[0].lessons[0]
+      setCurrentLesson(lesson)
+      setLoading(false)
+      
     } catch (error) {
-      console.error('Error fetching course:', error)
-    } finally {
+      console.error('Erro ao carregar dados do curso:', error)
       setLoading(false)
     }
   }
