@@ -17,20 +17,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Lesson ID is required' }, { status: 400 })
     }
 
-    // Verificar se a aula existe e se o usuário tem acesso
+    // Verificar se a aula existe
     const { data: lesson, error: lessonErr } = await supabaseAdmin
       .from('Lesson')
-      .select(`
-        id,
-        moduleId,
-        module:Module(
-          courseId,
-          course:Course(
-            id,
-            title
-          )
-        )
-      `)
+      .select('id, moduleId')
       .eq('id', lessonId)
       .eq('isPublished', true)
       .single()
@@ -39,12 +29,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
     }
 
+    // Buscar dados do módulo separadamente
+    const { data: module, error: moduleErr } = await supabaseAdmin
+      .from('Module')
+      .select('id, courseId')
+      .eq('id', lesson.moduleId)
+      .single()
+
+    if (moduleErr || !module) {
+      return NextResponse.json({ error: 'Module not found' }, { status: 404 })
+    }
+
     // Verificar se o usuário está matriculado no curso
     const { data: enrollment, error: enrollmentErr } = await supabaseAdmin
       .from('UserCourseEnrollment')
       .select('id')
       .eq('userId', session.user.id)
-      .eq('courseId', lesson.module.courseId)
+      .eq('courseId', module.courseId)
       .single()
 
     if (enrollmentErr && enrollmentErr.code !== 'PGRST116') {
@@ -138,23 +139,39 @@ export async function GET(req: NextRequest) {
         lesson:Lesson(
           id,
           title,
-          moduleId,
-          module:Module(
-            courseId
-          )
+          moduleId
         )
       `)
       .eq('userId', session.user.id)
-      .eq('lesson.module.courseId', courseId)
 
     if (progressErr) {
       console.error('Error fetching progress:', progressErr)
       return NextResponse.json({ error: 'Failed to fetch progress' }, { status: 500 })
     }
 
+    // Filtrar apenas progresso do curso específico
+    const courseProgress = []
+    if (progress) {
+      for (const p of progress) {
+        // lesson pode ser um array, então pegamos o primeiro elemento
+        const lesson = Array.isArray(p.lesson) ? p.lesson[0] : p.lesson
+        if (lesson?.moduleId) {
+          const { data: module } = await supabaseAdmin
+            .from('Module')
+            .select('courseId')
+            .eq('id', lesson.moduleId)
+            .single()
+          
+          if (module?.courseId === courseId) {
+            courseProgress.push(p)
+          }
+        }
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      progress: progress || []
+      progress: courseProgress
     })
 
   } catch (error) {

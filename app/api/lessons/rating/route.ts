@@ -21,20 +21,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 })
     }
 
-    // Verificar se a aula existe e se o usuário tem acesso
+    // Verificar se a aula existe
     const { data: lesson, error: lessonErr } = await supabaseAdmin
       .from('Lesson')
-      .select(`
-        id,
-        moduleId,
-        module:Module(
-          courseId,
-          course:Course(
-            id,
-            title
-          )
-        )
-      `)
+      .select('id, moduleId')
       .eq('id', lessonId)
       .eq('isPublished', true)
       .single()
@@ -43,12 +33,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
     }
 
+    // Buscar dados do módulo separadamente
+    const { data: module, error: moduleErr } = await supabaseAdmin
+      .from('Module')
+      .select('id, courseId')
+      .eq('id', lesson.moduleId)
+      .single()
+
+    if (moduleErr || !module) {
+      return NextResponse.json({ error: 'Module not found' }, { status: 404 })
+    }
+
     // Verificar se o usuário está matriculado no curso
     const { data: enrollment, error: enrollmentErr } = await supabaseAdmin
       .from('UserCourseEnrollment')
       .select('id')
       .eq('userId', session.user.id)
-      .eq('courseId', lesson.module.courseId)
+      .eq('courseId', module.courseId)
       .single()
 
     if (enrollmentErr && enrollmentErr.code !== 'PGRST116') {
