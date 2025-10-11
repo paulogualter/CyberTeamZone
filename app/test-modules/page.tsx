@@ -17,7 +17,6 @@ import {
   WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
-import ModuleModal from '@/components/ModuleModal'
 import { Module } from '@/types'
 
 export default function TestModulesPage() {
@@ -249,12 +248,22 @@ export default function TestModulesPage() {
 
         {/* Create Module Modal */}
         {showCreateModuleModal && (
-          <ModuleModal
-            isOpen={showCreateModuleModal}
-            onClose={() => setShowCreateModuleModal(false)}
-            onSubmit={handleCreateModule}
-            courseId={courseId}
-          />
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+              <h3 className="text-xl font-semibold mb-4">Criar Módulo</h3>
+              <p className="text-gray-400 mb-4">
+                Esta é uma página de teste. Para criar módulos, use a página oficial.
+              </p>
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => setShowCreateModuleModal(false)}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
