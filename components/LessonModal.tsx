@@ -52,7 +52,25 @@ export default function LessonModal({
 
   // Reset form when lesson changes
   useEffect(() => {
+    console.log('🔍 LessonModal - useEffect triggered:', {
+      hasLesson: !!lesson,
+      lesson: lesson,
+      moduleId,
+      nextOrder
+    })
+    
     if (lesson) {
+      console.log('✏️ LessonModal - Editing existing lesson:', {
+        id: lesson.id,
+        title: lesson.title,
+        hasContent: !!lesson.content,
+        hasVideoUrl: !!lesson.videoUrl,
+        duration: lesson.duration,
+        order: lesson.order,
+        type: lesson.type,
+        isPublished: lesson.isPublished
+      })
+      
       setFormData({
         id: lesson.id,
         title: lesson.title,
@@ -65,6 +83,7 @@ export default function LessonModal({
         moduleId: lesson.moduleId
       })
     } else {
+      console.log('➕ LessonModal - Creating new lesson')
       setFormData({
         title: '',
         content: '',

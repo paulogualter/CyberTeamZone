@@ -87,6 +87,11 @@ export default function LessonList({ moduleId, moduleTitle }: LessonListProps) {
   }
 
   const handleEditLesson = (lesson: any) => {
+    console.log('🖊️ LessonList - Edit button clicked:', {
+      lessonId: lesson.id,
+      lessonTitle: lesson.title,
+      lessonData: lesson
+    })
     setEditingLesson(lesson)
     setIsModalOpen(true)
   }
