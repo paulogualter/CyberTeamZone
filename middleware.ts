@@ -20,10 +20,10 @@ export function middleware(request: NextRequest) {
   response.headers.set('Cross-Origin-Opener-Policy', 'unsafe-none')
   response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin')
   
-  // Definir CSP completamente permissivo - versão mais agressiva
+  // Definir CSP completamente permissivo - versão ultra-agressiva
   response.headers.set('Content-Security-Policy', 
     "default-src * 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes' data: blob:; " +
-    "script-src * 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes'; " +
+    "script-src * 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes' 'unsafe-dynamic'; " +
     "style-src * 'unsafe-inline' 'unsafe-hashes'; " +
     "img-src * data: blob:; " +
     "font-src * data:; " +

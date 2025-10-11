@@ -7,10 +7,54 @@ export async function GET(req: NextRequest) {
     
     const { searchParams } = new URL(req.url)
     const courseId = searchParams.get('courseId')
+    const moduleId = searchParams.get('moduleId')
     
+    // Se moduleId foi fornecido, buscar aulas do módulo
+    if (moduleId) {
+      console.log('📚 Module ID provided:', moduleId)
+      
+      // Verificar se o módulo existe
+      const { data: module, error: moduleErr } = await supabaseAdmin
+        .from('Module')
+        .select('id, title, courseId')
+        .eq('id', moduleId)
+        .single()
+
+      if (moduleErr || !module) {
+        return NextResponse.json({ 
+          error: 'Module not found',
+          debug: moduleErr?.message,
+          moduleId: moduleId
+        }, { status: 404 })
+      }
+
+      // Buscar aulas do módulo
+      const { data: lessons, error: lessonsErr } = await supabaseAdmin
+        .from('Lesson')
+        .select('*')
+        .eq('moduleId', moduleId)
+        .order('order', { ascending: true })
+
+      return NextResponse.json({ 
+        success: true, 
+        lessons: lessons || [],
+        debug: {
+          moduleId: moduleId,
+          module: {
+            id: module.id,
+            title: module.title,
+            courseId: module.courseId
+          },
+          lessonsCount: lessons?.length || 0,
+          lessonsError: lessonsErr?.message
+        }
+      })
+    }
+    
+    // Se courseId foi fornecido, buscar dados completos do curso
     if (!courseId) {
       return NextResponse.json({ 
-        error: 'Course ID is required'
+        error: 'Course ID or Module ID is required'
       }, { status: 400 })
     }
 
