@@ -68,7 +68,9 @@ export async function POST(req: NextRequest) {
     console.log('🔍 Test lessons POST endpoint called')
     
     const body = await req.json()
-    const { title, content, type, duration, order, videoUrl, attachment, moduleId } = body
+    console.log('📝 Request body:', JSON.stringify(body, null, 2))
+    
+    const { title, content, type, duration, order, videoUrl, attachment, moduleId, isPublished } = body
 
     // Validação básica
     if (!title || !content || !type || !moduleId) {
@@ -124,7 +126,7 @@ export async function POST(req: NextRequest) {
         videoUrl: videoUrl || null,
         attachment: attachment || null,
         moduleId,
-        isPublished: false,
+        isPublished: body.isPublished || false,
         createdAt: nowIso,
         updatedAt: nowIso
       })
@@ -223,6 +225,8 @@ export async function PUT(req: NextRequest) {
     console.log('🔍 Test lessons PUT endpoint called')
     
     const body = await req.json()
+    console.log('📝 PUT Request body:', JSON.stringify(body, null, 2))
+    
     const { id, title, content, type, duration, order, videoUrl, attachment, moduleId, isPublished } = body
 
     // Validação básica
@@ -274,7 +278,7 @@ export async function PUT(req: NextRequest) {
         order: order || 1,
         videoUrl: videoUrl || null,
         attachment: attachment || null,
-        isPublished: isPublished || false,
+        isPublished: isPublished === true,
         updatedAt: nowIso
       })
       .eq('id', id)
