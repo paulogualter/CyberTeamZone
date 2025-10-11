@@ -75,46 +75,31 @@ export default function MemberLessonViewer() {
     try {
       console.log('🔍 Fetching course data for:', courseId)
       
-      // Temporariamente usar dados mockados até resolver problema de roteamento
-      const mockCourse = {
-        id: courseId,
-        title: 'Curso de Cibersegurança',
-        description: 'Aprenda os fundamentos da cibersegurança com este curso completo.',
-        instructor: {
-          id: 'instructor-1',
-          name: 'Instrutor CyberTeam',
-          bio: 'Especialista em cibersegurança com mais de 10 anos de experiência.',
-          avatar: ''
-        },
-        modules: [
-          {
-            id: 'module-1',
-            title: 'Fundamentos de Segurança',
-            order: 1,
-            lessons: [
-              {
-                id: lessonId,
-                title: 'Introdução à Cibersegurança',
-                content: '<p>Esta é uma aula sobre os fundamentos da cibersegurança.</p><p>Aprenda sobre:</p><ul><li>Conceitos básicos</li><li>Tipos de ameaças</li><li>Estratégias de defesa</li></ul>',
-                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                duration: 30,
-                order: 1,
-                type: 'VIDEO',
-                isPublished: true,
-                createdAt: new Date().toISOString()
-              }
-            ]
-          }
-        ]
+      // Buscar dados reais do curso
+      const response = await fetch(`/api/courses/${courseId}/content`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setCourse(data.course)
+        
+        // Encontrar a aula específica
+        const allLessons = data.course.modules?.flatMap((module: Module) => module.lessons) || []
+        const lesson = allLessons.find((l: Lesson) => l.id === lessonId)
+        
+        if (lesson) {
+          setCurrentLesson(lesson)
+          console.log('✅ Real lesson data loaded:', lesson)
+        } else {
+          console.error('❌ Lesson not found:', lessonId)
+          setError('Aula não encontrada')
+        }
+      } else {
+        console.error('❌ Error fetching course:', data.error)
+        setError(data.error || 'Erro ao carregar dados do curso')
       }
       
-      setCourse(mockCourse)
-      const lesson = mockCourse.modules[0].lessons[0]
-      setCurrentLesson(lesson)
-      console.log('✅ Mock data loaded successfully')
-      
     } catch (error) {
-      console.error('❌ Error loading mock data:', error)
+      console.error('❌ Error loading course data:', error)
       setError('Erro ao carregar dados do curso')
     } finally {
       setLoading(false)
