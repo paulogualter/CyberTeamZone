@@ -101,15 +101,15 @@ export default function LessonList({ moduleId, moduleTitle }: LessonListProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">Carregando aulas...</span>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <span className="ml-2 text-gray-300">Carregando aulas...</span>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+      <div className="bg-red-900/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg">
         <p className="font-medium">Erro ao carregar aulas</p>
         <p className="text-sm">{error}</p>
       </div>
@@ -121,10 +121,10 @@ export default function LessonList({ moduleId, moduleTitle }: LessonListProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-white">
             {moduleTitle ? `Aulas - ${moduleTitle}` : 'Aulas do Módulo'}
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-300 mt-1">
             {lessons.length} {lessons.length === 1 ? 'aula' : 'aulas'} cadastrada{lessons.length === 1 ? '' : 's'}
           </p>
         </div>
@@ -139,10 +139,10 @@ export default function LessonList({ moduleId, moduleTitle }: LessonListProps) {
 
       {/* Lessons List */}
       {lessons.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
+        <div className="text-center py-12 bg-slate-800 rounded-lg border border-slate-700">
           <FileText className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhuma aula cadastrada</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm font-medium text-white">Nenhuma aula cadastrada</h3>
+          <p className="mt-1 text-sm text-gray-300">
             Comece criando a primeira aula deste módulo.
           </p>
           <div className="mt-6">
@@ -162,13 +162,13 @@ export default function LessonList({ moduleId, moduleTitle }: LessonListProps) {
             .map((lesson) => (
               <div
                 key={lesson.id}
-                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:shadow-lg hover:border-slate-600 transition-all"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4 flex-1">
                     {/* Order Badge */}
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
+                      <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
                         {lesson.order}
                       </div>
                     </div>
@@ -177,26 +177,26 @@ export default function LessonList({ moduleId, moduleTitle }: LessonListProps) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-2">
                         {getLessonTypeIcon(lesson.type)}
-                        <h3 className="text-lg font-medium text-gray-900 truncate">
+                        <h3 className="text-lg font-medium text-white truncate">
                           {lesson.title}
                         </h3>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-gray-300">
                           {getLessonTypeLabel(lesson.type)}
                         </span>
                         {lesson.isPublished ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
                             <Eye className="h-3 w-3 mr-1" />
                             Publicada
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-600 text-white">
                             <EyeOff className="h-3 w-3 mr-1" />
                             Rascunho
                           </span>
                         )}
                       </div>
 
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="flex items-center space-x-4 text-sm text-gray-300">
                         {lesson.duration && (
                           <div className="flex items-center space-x-1">
                             <Clock className="h-4 w-4" />
@@ -216,7 +216,7 @@ export default function LessonList({ moduleId, moduleTitle }: LessonListProps) {
 
                       {lesson.content && (
                         <div className="mt-3">
-                          <p className="text-sm text-gray-600 line-clamp-2">
+                          <p className="text-sm text-gray-300 line-clamp-2">
                             {lesson.content.replace(/<[^>]*>/g, '').substring(0, 150)}
                             {lesson.content.length > 150 && '...'}
                           </p>
@@ -229,14 +229,14 @@ export default function LessonList({ moduleId, moduleTitle }: LessonListProps) {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleEditLesson(lesson)}
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-600/20 rounded-lg transition-colors"
                       title="Editar aula"
                     >
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteLesson(lesson.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-600/20 rounded-lg transition-colors"
                       title="Excluir aula"
                     >
                       <Trash2 className="h-4 w-4" />

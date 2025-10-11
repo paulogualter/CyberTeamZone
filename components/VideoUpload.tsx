@@ -140,8 +140,8 @@ export default function VideoUpload({
         <div
           className={`
             border-2 border-dashed rounded-lg p-8 text-center transition-colors
-            ${isUploading ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
-            ${error ? 'border-red-400 bg-red-50' : ''}
+            ${isUploading ? 'border-blue-400 bg-blue-900/20' : 'border-slate-600 hover:border-slate-500'}
+            ${error ? 'border-red-400 bg-red-900/20' : ''}
           `}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -158,13 +158,13 @@ export default function VideoUpload({
             <Upload className="mx-auto h-12 w-12 text-gray-400" />
             
             <div>
-              <p className="text-lg font-medium text-gray-900">
+              <p className="text-lg font-medium text-white">
                 {isUploading ? 'Fazendo upload do vídeo...' : 'Arraste um vídeo aqui ou clique para selecionar'}
               </p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-300 mt-1">
                 Formatos suportados: MP4, WebM, OGG, AVI, MOV, WMV, FLV, MKV
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-300">
                 Tamanho máximo: 500MB
               </p>
             </div>
@@ -179,7 +179,7 @@ export default function VideoUpload({
             )}
 
             {isUploading && (
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-slate-700 rounded-full h-2">
                 <div 
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
@@ -188,7 +188,7 @@ export default function VideoUpload({
             )}
 
             {error && (
-              <div className="text-red-600 text-sm bg-red-100 p-3 rounded-lg">
+              <div className="text-red-300 text-sm bg-red-900/20 p-3 rounded-lg">
                 {error}
               </div>
             )}
@@ -242,17 +242,17 @@ export default function VideoUpload({
 
           {/* Video Info */}
           {videoFile && (
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-slate-700 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900">{videoFile.name}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="font-medium text-white">{videoFile.name}</p>
+                  <p className="text-sm text-gray-300">
                     {formatFileSize(videoFile.size)} • {videoFile.type}
                   </p>
                 </div>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  className="text-blue-400 hover:text-blue-300 text-sm font-medium"
                 >
                   Trocar Vídeo
                 </button>
@@ -263,14 +263,14 @@ export default function VideoUpload({
       )}
 
       {/* URL Input Alternative */}
-      <div className="border-t pt-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="border-t border-slate-600 pt-4">
+        <label className="block text-sm font-medium text-gray-300 mb-2">
           Ou insira uma URL de vídeo (YouTube, Vimeo, etc.)
         </label>
         <input
           type="url"
           placeholder="https://www.youtube.com/watch?v=..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-400"
           onChange={(e) => {
             const url = e.target.value
             if (url) {

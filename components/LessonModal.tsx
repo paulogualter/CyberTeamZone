@@ -150,15 +150,15 @@ export default function LessonModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-slate-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden border border-slate-700">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">
+        <div className="flex items-center justify-between p-6 border-b border-slate-700">
+          <h2 className="text-xl font-semibold text-white">
             {lesson ? 'Editar Aula' : 'Nova Aula'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-white transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
@@ -169,7 +169,7 @@ export default function LessonModal({
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              <div className="bg-red-900/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg">
                 {error}
               </div>
             )}
@@ -177,7 +177,7 @@ export default function LessonModal({
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Título da Aula *
                 </label>
                 <input
@@ -185,21 +185,21 @@ export default function LessonModal({
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-400"
                   placeholder="Digite o título da aula"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Tipo da Aula
                 </label>
                 <select
                   name="type"
                   value={formData.type}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white"
                 >
                   <option value="VIDEO">Vídeo</option>
                   <option value="TEXT">Texto</option>
@@ -212,7 +212,7 @@ export default function LessonModal({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Ordem
                 </label>
                 <input
@@ -221,12 +221,12 @@ export default function LessonModal({
                   value={formData.order}
                   onChange={handleInputChange}
                   min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Duração (minutos)
                 </label>
                 <input
@@ -235,7 +235,7 @@ export default function LessonModal({
                   value={formData.duration}
                   onChange={handleInputChange}
                   min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white"
                 />
               </div>
 
@@ -246,9 +246,9 @@ export default function LessonModal({
                     name="isPublished"
                     checked={formData.isPublished}
                     onChange={handleInputChange}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-slate-600 bg-slate-700 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-gray-300">
                     Publicar aula
                   </span>
                 </label>
@@ -257,7 +257,7 @@ export default function LessonModal({
 
             {/* Video Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Vídeo da Aula
               </label>
               <VideoUpload
@@ -270,13 +270,13 @@ export default function LessonModal({
             {/* Content */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-300">
                   Conteúdo da Aula *
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowPreview(!showPreview)}
-                  className="flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-700"
+                  className="flex items-center space-x-1 text-sm text-blue-400 hover:text-blue-300"
                 >
                   {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   <span>{showPreview ? 'Editar' : 'Visualizar'}</span>
@@ -284,9 +284,9 @@ export default function LessonModal({
               </div>
 
               {showPreview ? (
-                <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 min-h-[200px]">
+                <div className="border border-slate-600 rounded-lg p-4 bg-slate-700 min-h-[200px]">
                   <div 
-                    className="prose max-w-none"
+                    className="prose max-w-none prose-invert"
                     dangerouslySetInnerHTML={{ __html: formData.content }}
                   />
                 </div>
@@ -296,7 +296,7 @@ export default function LessonModal({
                   value={formData.content}
                   onChange={handleInputChange}
                   rows={8}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-400"
                   placeholder="Digite o conteúdo da aula (suporte a HTML)"
                   required
                 />
@@ -306,13 +306,13 @@ export default function LessonModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t bg-gray-50">
+        <div className="flex items-center justify-between p-6 border-t border-slate-700 bg-slate-800">
           <div className="flex items-center space-x-4">
             {lesson && onDelete && (
               <button
                 onClick={handleDelete}
                 disabled={isLoading}
-                className="flex items-center space-x-2 px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center space-x-2 px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-600/20 rounded-lg transition-colors disabled:opacity-50"
               >
                 <Trash2 className="h-4 w-4" />
                 <span>Excluir</span>
@@ -324,7 +324,7 @@ export default function LessonModal({
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="px-4 py-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-gray-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-50"
             >
               Cancelar
             </button>
