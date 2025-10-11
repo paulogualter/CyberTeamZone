@@ -6,12 +6,10 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    console.log('🔍 Test course content endpoint called')
-    
     const courseId = params.id
-    console.log('📚 Course ID:', courseId)
+    console.log('🔍 Testing course fetch for:', courseId)
 
-    // Buscar dados do curso
+    // Buscar dados do curso sem autenticação
     const { data: course, error: courseErr } = await supabaseAdmin
       .from('Course')
       .select(`
@@ -36,7 +34,7 @@ export async function GET(
       return NextResponse.json({ 
         error: 'Course not found',
         debug: {
-          courseId: courseId,
+          courseId,
           courseError: courseErr?.message,
           courseExists: !!course
         }
@@ -50,7 +48,6 @@ export async function GET(
         id,
         title,
         order,
-        isPublished,
         lessons:Lesson(
           id,
           title,
@@ -71,13 +68,7 @@ export async function GET(
 
     if (modulesErr) {
       console.error('Error fetching modules:', modulesErr)
-      return NextResponse.json({ 
-        error: 'Failed to fetch modules',
-        debug: {
-          courseId: courseId,
-          modulesError: modulesErr.message
-        }
-      }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to fetch modules' }, { status: 500 })
     }
 
     // Filtrar apenas aulas publicadas
@@ -86,32 +77,19 @@ export async function GET(
       lessons: module.lessons?.filter(lesson => lesson.isPublished) || []
     })) || []
 
-    console.log('✅ Course content fetched successfully')
-
     return NextResponse.json({
       success: true,
       course: {
         ...course,
         modules: modulesWithPublishedLessons
-      },
-      debug: {
-        courseId: courseId,
-        courseTitle: course.title,
-        courseApprovalStatus: course.approvalStatus,
-        modulesCount: modules?.length || 0,
-        totalLessons: modules?.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0,
-        publishedLessons: modulesWithPublishedLessons.reduce((sum, module) => sum + (module.lessons?.length || 0), 0)
       }
     })
 
   } catch (error) {
-    console.error('❌ Error in test course content:', error)
+    console.error('Error in GET /api/test/courses/[id]/content:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { 
-        error: 'Internal server error', 
-        debug: errorMessage 
-      },
+      { error: 'Internal server error', debug: errorMessage },
       { status: 500 }
     )
   }

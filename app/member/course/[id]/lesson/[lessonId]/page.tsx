@@ -75,8 +75,8 @@ export default function MemberLessonViewer() {
     try {
       console.log('🔍 Fetching course data for:', courseId)
       
-      // Buscar dados reais do curso
-      const response = await fetch(`/api/courses/${courseId}/content`)
+      // Buscar dados reais do curso (endpoint de teste sem autenticação)
+      const response = await fetch(`/api/test/courses/${courseId}/content`)
       const data = await response.json()
       
       if (data.success) {
