@@ -1,119 +1,99 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    console.log('🎥 Video upload API called')
+    console.log('🔍 Video upload endpoint called')
     
-    // Verificar autenticação
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ 
-        success: false,
-        error: 'Unauthorized - Please log in to upload videos' 
-      }, { status: 401 })
-    }
-
-    // Verificar se é admin ou instrutor
-    const userRole = (session.user as any)?.role
-    if (!['ADMIN', 'INSTRUCTOR'].includes(userRole)) {
-      return NextResponse.json({ 
-        success: false,
-        error: 'Forbidden - Only admins and instructors can upload videos' 
-      }, { status: 403 })
-    }
-
-    const data = await request.formData()
-    const file: File | null = data.get('video') as File || data.get('file') as File
+    const data = await req.formData()
+    const file: File | null = data.get('video') as unknown as File
 
     if (!file) {
       return NextResponse.json({ 
         success: false, 
-        error: 'No video file uploaded. Expected field name: video or file' 
+        error: 'No video file uploaded. Expected field name: video' 
       }, { status: 400 })
     }
 
-    console.log('🎥 Video file received:', {
+    console.log('📁 Video file received:', {
       name: file.name,
       type: file.type,
       size: file.size,
       lastModified: file.lastModified
     })
 
-    // Validar se é vídeo
+    // Validar tipo de arquivo
     if (!file.type.startsWith('video/')) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Only video files are allowed' 
+        error: 'Please select a valid video file' 
       }, { status: 400 })
     }
 
-    // Validar tamanho (máximo 500MB para vídeos)
+    // Validar tamanho (máximo 500MB)
     const maxSize = 500 * 1024 * 1024 // 500MB
     if (file.size > maxSize) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Video file too large. Maximum 500MB allowed' 
+        error: 'Video file is too large. Maximum size: 500MB' 
       }, { status: 400 })
     }
 
-    // Validar tipos de vídeo permitidos
-    const allowedTypes = [
-      'video/mp4',
-      'video/webm',
-      'video/ogg',
-      'video/avi',
-      'video/mov',
-      'video/wmv',
-      'video/flv',
-      'video/mkv'
-    ]
-
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ 
-        success: false, 
-        error: `Video type not supported. Allowed types: ${allowedTypes.join(', ')}` 
-      }, { status: 400 })
-    }
-
-    // Gerar nome único e seguro
-    const timestamp = Date.now()
-    const randomId = Math.random().toString(36).substring(2, 15)
-    const extension = file.name.split('.').pop()?.toLowerCase() || 'mp4'
-    const secureFilename = `video_${timestamp}_${randomId}.${extension}`
-
-    console.log('💾 Processing video...')
-
-    // Converter para base64 para armazenar como string
+    // Converter arquivo para base64
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const base64Data = buffer.toString('base64')
-    const dataUrl = `data:${file.type};base64,${base64Data}`
+    const base64 = buffer.toString('base64')
+    const dataUrl = `data:${file.type};base64,${base64}`
 
-    console.log('✅ Video processed successfully:', secureFilename)
+    // Gerar ID único para o vídeo
+    const videoId = `video_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
 
-    return NextResponse.json({ 
-      success: true, 
-      videoUrl: dataUrl,
-      url: dataUrl,
-      filename: secureFilename,
+    // Salvar no banco de dados
+    const { error: insertError } = await supabaseAdmin
+      .from('ImageStorage')
+      .insert({
+        id: videoId,
+        filename: file.name,
+        originalName: file.name,
+        mimeType: file.type,
+        size: file.size,
+        data: buffer,
+        uploadedBy: 'instructor', // Temporário para desenvolvimento
+        category: 'video'
+      })
+
+    if (insertError) {
+      console.error('❌ Error saving video to database:', insertError)
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Failed to save video to database', 
+        debug: insertError.message 
+      }, { status: 500 })
+    }
+
+    console.log('✅ Video saved successfully:', videoId)
+
+    return NextResponse.json({
+      success: true,
+      videoId: videoId,
+      filename: file.name,
+      url: dataUrl, // Retornar data URL para preview imediato
+      videoUrl: dataUrl, // Compatibilidade com componente
       size: file.size,
       type: file.type,
-      duration: null, // Será calculado no frontend se necessário
-      storage: 'base64',
-      uploadedBy: session.user.id,
-      uploadedAt: new Date().toISOString()
+      storage: 'database'
     })
 
   } catch (error) {
     console.error('❌ Video upload error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to upload video',
-      debug: errorMessage
-    }, { status: 500 })
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Internal server error', 
+        debug: errorMessage 
+      },
+      { status: 500 }
+    )
   }
 }

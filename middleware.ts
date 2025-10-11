@@ -20,23 +20,30 @@ export function middleware(request: NextRequest) {
   response.headers.set('Cross-Origin-Opener-Policy', 'unsafe-none')
   response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin')
   
-  // Definir CSP completamente permissivo
+  // Definir CSP completamente permissivo - versão mais agressiva
   response.headers.set('Content-Security-Policy', 
-    "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
-    "script-src * 'unsafe-inline' 'unsafe-eval'; " +
-    "style-src * 'unsafe-inline'; " +
+    "default-src * 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes' data: blob:; " +
+    "script-src * 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes'; " +
+    "style-src * 'unsafe-inline' 'unsafe-hashes'; " +
     "img-src * data: blob:; " +
-    "font-src *; " +
+    "font-src * data:; " +
     "connect-src *; " +
-    "media-src *; " +
+    "media-src * data: blob:; " +
     "object-src *; " +
     "child-src *; " +
     "frame-src *; " +
     "worker-src *; " +
-    "frame-ancestors *;"
+    "frame-ancestors *; " +
+    "form-action *; " +
+    "base-uri *;"
   )
   
-  console.log('✅ Middleware: CSP set to permissive for:', request.url)
+  // Adicionar headers CORS permissivos
+  response.headers.set('Access-Control-Allow-Origin', '*')
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  response.headers.set('Access-Control-Allow-Headers', '*')
+  
+  console.log('✅ Middleware: CSP set to ultra-permissive for:', request.url)
   
   return response
 }

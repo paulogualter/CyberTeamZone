@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(
   request: NextRequest,
@@ -15,7 +16,6 @@ export async function GET(
 
     // Para vídeos armazenados como base64 data URLs
     if (videoId.startsWith('data:')) {
-      // Extrair o tipo MIME e os dados base64
       const [header, base64Data] = videoId.split(',')
       const mimeType = header.match(/data:([^;]+)/)?.[1] || 'video/mp4'
       
@@ -23,7 +23,6 @@ export async function GET(
         return NextResponse.json({ error: 'Invalid video data' }, { status: 400 })
       }
 
-      // Converter base64 para buffer
       const buffer = Buffer.from(base64Data, 'base64')
 
       return new NextResponse(buffer, {
@@ -31,8 +30,8 @@ export async function GET(
         headers: {
           'Content-Type': mimeType,
           'Content-Length': buffer.length.toString(),
-          'Cache-Control': 'public, max-age=31536000', // Cache por 1 ano
-          'Accept-Ranges': 'bytes', // Suporte a range requests para streaming
+          'Cache-Control': 'public, max-age=31536000',
+          'Accept-Ranges': 'bytes',
         },
       })
     }
@@ -42,7 +41,31 @@ export async function GET(
       return NextResponse.redirect(videoId)
     }
 
-    return NextResponse.json({ error: 'Video not found' }, { status: 404 })
+    // Buscar vídeo no banco de dados
+    const { data: videoData, error: videoError } = await supabaseAdmin
+      .from('ImageStorage')
+      .select('data, mimeType, size')
+      .eq('id', videoId)
+      .eq('category', 'video')
+      .single()
+
+    if (videoError || !videoData) {
+      console.error('❌ Video not found:', videoError)
+      return NextResponse.json({ error: 'Video not found' }, { status: 404 })
+    }
+
+    const buffer = Buffer.from(videoData.data)
+    const mimeType = videoData.mimeType || 'video/mp4'
+
+    return new NextResponse(buffer, {
+      status: 200,
+      headers: {
+        'Content-Type': mimeType,
+        'Content-Length': buffer.length.toString(),
+        'Cache-Control': 'public, max-age=31536000',
+        'Accept-Ranges': 'bytes',
+      },
+    })
 
   } catch (error) {
     console.error('❌ Error serving video:', error)
