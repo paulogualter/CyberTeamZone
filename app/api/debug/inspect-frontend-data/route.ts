@@ -17,12 +17,13 @@ export async function POST(req: NextRequest) {
       parsedBody = JSON.parse(rawBody)
       console.log('📊 Parsed JSON:', JSON.stringify(parsedBody, null, 2))
     } catch (parseError) {
-      console.log('❌ JSON parse error:', parseError.message)
+      const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parse error'
+      console.log('❌ JSON parse error:', errorMessage)
       return NextResponse.json({
         error: 'Invalid JSON',
         debug: {
           rawBody,
-          parseError: parseError.message
+          parseError: errorMessage
         }
       }, { status: 400 })
     }

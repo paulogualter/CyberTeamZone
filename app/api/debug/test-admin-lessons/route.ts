@@ -40,10 +40,11 @@ export async function POST(req: NextRequest) {
       requestBody = await req.json()
       console.log('📝 Request body parsed:', requestBody)
     } catch (parseError) {
-      console.log('❌ Error parsing request body:', parseError)
+      const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parse error'
+      console.log('❌ Error parsing request body:', errorMessage)
       return NextResponse.json({ 
         error: 'Invalid JSON in request body',
-        debug: { parseError: parseError.message }
+        debug: { parseError: errorMessage }
       }, { status: 400 })
     }
 
