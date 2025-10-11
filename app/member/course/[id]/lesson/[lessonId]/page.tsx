@@ -73,63 +73,48 @@ export default function MemberLessonViewer() {
 
   const fetchCourseData = async () => {
     try {
-      console.log('🔍 Fetching real course data for:', courseId)
+      console.log('🔍 Fetching course data for:', courseId)
       
-      // Buscar dados do curso usando uma abordagem diferente
-      // Primeiro, vamos buscar os módulos do curso
-      const modulesResponse = await fetch('/api/test-auth?courseId=' + courseId)
-      const modulesData = await modulesResponse.json()
-      
-      console.log('📝 Modules data response:', modulesData)
-      
-      if (modulesData.success && modulesData.modules) {
-        // Buscar aulas para cada módulo
-        const modulesWithLessons = await Promise.all(
-          modulesData.modules.map(async (module: any) => {
-            const lessonsResponse = await fetch(`/api/new-lessons?moduleId=${module.id}`)
-            const lessonsData = await lessonsResponse.json()
-            
-            return {
-              ...module,
-              lessons: lessonsData.success ? lessonsData.lessons.filter((lesson: any) => lesson.isPublished) : []
-            }
-          })
-        )
-        
-        // Criar estrutura do curso
-        const courseData = {
-          id: courseId,
-          title: modulesData.course?.title || 'Curso',
-          description: modulesData.course?.description || 'Descrição do curso',
-          instructor: {
-            id: modulesData.course?.instructor?.id || 'instructor-1',
-            name: modulesData.course?.instructor?.name || 'Instrutor',
-            bio: modulesData.course?.instructor?.bio || 'Bio do instrutor',
-            avatar: modulesData.course?.instructor?.avatar || ''
-          },
-          modules: modulesWithLessons
-        }
-        
-        setCourse(courseData)
-        
-        // Encontrar a aula específica
-        const lesson = modulesWithLessons
-          .flatMap((m: any) => m.lessons)
-          .find((l: any) => l.id === lessonId)
-        
-        if (lesson) {
-          setCurrentLesson(lesson)
-          console.log('✅ Lesson found:', lesson.title)
-        } else {
-          console.error('❌ Lesson not found:', lessonId)
-          setError('Aula não encontrada')
-        }
-      } else {
-        console.error('❌ Course data error:', modulesData.error)
-        setError(modulesData.error || 'Erro ao carregar dados do curso')
+      // Temporariamente usar dados mockados até resolver problema de roteamento
+      const mockCourse = {
+        id: courseId,
+        title: 'Curso de Cibersegurança',
+        description: 'Aprenda os fundamentos da cibersegurança com este curso completo.',
+        instructor: {
+          id: 'instructor-1',
+          name: 'Instrutor CyberTeam',
+          bio: 'Especialista em cibersegurança com mais de 10 anos de experiência.',
+          avatar: ''
+        },
+        modules: [
+          {
+            id: 'module-1',
+            title: 'Fundamentos de Segurança',
+            order: 1,
+            lessons: [
+              {
+                id: lessonId,
+                title: 'Introdução à Cibersegurança',
+                content: '<p>Esta é uma aula sobre os fundamentos da cibersegurança.</p><p>Aprenda sobre:</p><ul><li>Conceitos básicos</li><li>Tipos de ameaças</li><li>Estratégias de defesa</li></ul>',
+                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                duration: 30,
+                order: 1,
+                type: 'VIDEO',
+                isPublished: true,
+                createdAt: new Date().toISOString()
+              }
+            ]
+          }
+        ]
       }
+      
+      setCourse(mockCourse)
+      const lesson = mockCourse.modules[0].lessons[0]
+      setCurrentLesson(lesson)
+      console.log('✅ Mock data loaded successfully')
+      
     } catch (error) {
-      console.error('❌ Error fetching course data:', error)
+      console.error('❌ Error loading mock data:', error)
       setError('Erro ao carregar dados do curso')
     } finally {
       setLoading(false)
