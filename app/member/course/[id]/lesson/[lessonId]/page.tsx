@@ -63,6 +63,7 @@ export default function MemberLessonViewer() {
   const [rating, setRating] = useState(0)
   const [isCompleted, setIsCompleted] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (courseId && lessonId) {
@@ -72,46 +73,36 @@ export default function MemberLessonViewer() {
 
   const fetchCourseData = async () => {
     try {
-      // Simular dados do curso para teste
-      const mockCourse: Course = {
-        id: courseId,
-        title: 'Curso de Teste',
-        description: 'Este é um curso de teste para desenvolvimento.',
-        instructor: {
-          id: 'instructor-1',
-          name: 'Instrutor Teste',
-          bio: 'Instrutor especializado em cibersegurança.',
-          avatar: ''
-        },
-        modules: [
-          {
-            id: 'module-1',
-            title: 'Módulo 1',
-            order: 1,
-            lessons: [
-              {
-                id: lessonId,
-                title: 'Aula de Teste',
-                content: '<p>Esta é uma aula de teste com conteúdo HTML.</p>',
-                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                duration: 30,
-                order: 1,
-                type: 'VIDEO',
-                isPublished: true,
-                createdAt: new Date().toISOString()
-              }
-            ]
-          }
-        ]
+      console.log('🔍 Fetching real course data for:', courseId)
+      
+      const response = await fetch(`/api/courses/${courseId}/real-content`)
+      const data = await response.json()
+      
+      console.log('📝 Course data response:', data)
+      
+      if (data.success) {
+        setCourse(data.course)
+        
+        // Encontrar a aula específica
+        const lesson = data.course.modules
+          .flatMap((m: Module) => m.lessons)
+          .find((l: Lesson) => l.id === lessonId)
+        
+        if (lesson) {
+          setCurrentLesson(lesson)
+          console.log('✅ Lesson found:', lesson.title)
+        } else {
+          console.error('❌ Lesson not found:', lessonId)
+          setError('Aula não encontrada')
+        }
+      } else {
+        console.error('❌ Course data error:', data.error)
+        setError(data.error || 'Erro ao carregar dados do curso')
       }
-      
-      setCourse(mockCourse)
-      const lesson = mockCourse.modules[0].lessons[0]
-      setCurrentLesson(lesson)
-      setLoading(false)
-      
     } catch (error) {
-      console.error('Erro ao carregar dados do curso:', error)
+      console.error('❌ Error fetching course data:', error)
+      setError('Erro ao carregar dados do curso')
+    } finally {
       setLoading(false)
     }
   }
@@ -178,7 +169,27 @@ export default function MemberLessonViewer() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="text-gray-300 mt-4">Carregando aula...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-white mb-4">Erro ao Carregar</h1>
+          <p className="text-gray-300 mb-8">{error}</p>
+          <button
+            onClick={() => router.push(`/member/course/${courseId}`)}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+          >
+            Voltar para o Curso
+          </button>
+        </div>
       </div>
     )
   }
