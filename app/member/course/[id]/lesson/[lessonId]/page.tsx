@@ -75,18 +75,47 @@ export default function MemberLessonViewer() {
     try {
       console.log('🔍 Fetching real course data for:', courseId)
       
-      const response = await fetch(`/api/course-content?courseId=${courseId}`)
-      const data = await response.json()
+      // Buscar dados do curso usando uma abordagem diferente
+      // Primeiro, vamos buscar os módulos do curso
+      const modulesResponse = await fetch('/api/test-auth?courseId=' + courseId)
+      const modulesData = await modulesResponse.json()
       
-      console.log('📝 Course data response:', data)
+      console.log('📝 Modules data response:', modulesData)
       
-      if (data.success) {
-        setCourse(data.course)
+      if (modulesData.success && modulesData.modules) {
+        // Buscar aulas para cada módulo
+        const modulesWithLessons = await Promise.all(
+          modulesData.modules.map(async (module: any) => {
+            const lessonsResponse = await fetch(`/api/test/lessons?moduleId=${module.id}`)
+            const lessonsData = await lessonsResponse.json()
+            
+            return {
+              ...module,
+              lessons: lessonsData.success ? lessonsData.lessons.filter((lesson: any) => lesson.isPublished) : []
+            }
+          })
+        )
+        
+        // Criar estrutura do curso
+        const courseData = {
+          id: courseId,
+          title: modulesData.course?.title || 'Curso',
+          description: modulesData.course?.description || 'Descrição do curso',
+          instructor: {
+            id: modulesData.course?.instructor?.id || 'instructor-1',
+            name: modulesData.course?.instructor?.name || 'Instrutor',
+            bio: modulesData.course?.instructor?.bio || 'Bio do instrutor',
+            avatar: modulesData.course?.instructor?.avatar || ''
+          },
+          modules: modulesWithLessons
+        }
+        
+        setCourse(courseData)
         
         // Encontrar a aula específica
-        const lesson = data.course.modules
-          .flatMap((m: Module) => m.lessons)
-          .find((l: Lesson) => l.id === lessonId)
+        const lesson = modulesWithLessons
+          .flatMap((m: any) => m.lessons)
+          .find((l: any) => l.id === lessonId)
         
         if (lesson) {
           setCurrentLesson(lesson)
@@ -96,8 +125,8 @@ export default function MemberLessonViewer() {
           setError('Aula não encontrada')
         }
       } else {
-        console.error('❌ Course data error:', data.error)
-        setError(data.error || 'Erro ao carregar dados do curso')
+        console.error('❌ Course data error:', modulesData.error)
+        setError(modulesData.error || 'Erro ao carregar dados do curso')
       }
     } catch (error) {
       console.error('❌ Error fetching course data:', error)
