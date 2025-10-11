@@ -17,7 +17,8 @@ export default function AdminRedirect() {
     if (
       pathname.startsWith('/admin') ||
       pathname.startsWith('/instructor') ||
-      pathname.startsWith('/course')
+      pathname.startsWith('/course') ||
+      pathname.startsWith('/member')
     ) {
       return
     }
