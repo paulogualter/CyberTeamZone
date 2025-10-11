@@ -77,11 +77,13 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('❌ Direct test error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : 'No stack trace'
     return NextResponse.json({
       error: 'Test failed',
       debug: {
-        error: error.message,
-        stack: error.stack
+        error: errorMessage,
+        stack: errorStack
       }
     }, { status: 500 })
   }
