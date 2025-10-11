@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
         videoUrl: videoUrl || null,
         attachment: attachment || null,
         moduleId,
-        isPublished: body.isPublished || false,
+        isPublished: true, // SEMPRE TRUE para teste
         createdAt: nowIso,
         updatedAt: nowIso
       })
