@@ -69,6 +69,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    // Get raw body first for debugging
+    const rawBody = await req.text()
+    console.log('📝 Raw request body:', rawBody)
+    
+    let requestData
+    try {
+      requestData = JSON.parse(rawBody)
+      console.log('📊 Parsed request data:', JSON.stringify(requestData, null, 2))
+    } catch (parseError) {
+      console.log('❌ JSON parse error:', parseError.message)
+      return NextResponse.json({
+        error: 'Invalid JSON in request body',
+        debug: { rawBody, parseError: parseError.message }
+      }, { status: 400 })
+    }
+
     const { 
       title, 
       description, 
@@ -78,9 +94,9 @@ export async function POST(req: NextRequest) {
       order, 
       moduleId,
       isPublished = false 
-    } = await req.json()
+    } = requestData
 
-    console.log('📝 Request data:', { title, moduleId, order })
+    console.log('📝 Extracted data:', { title, moduleId, order, isPublished })
 
     // Validação básica
     if (!title || !moduleId) {
