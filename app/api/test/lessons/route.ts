@@ -82,7 +82,8 @@ export async function POST(req: NextRequest) {
       attachment,
       moduleId,
       isPublished,
-      isPublishedType: typeof isPublished
+      isPublishedType: typeof isPublished,
+      FORCED_PUBLISHED: 'TRUE - FORÇADO PARA TRUE'
     })
 
     // Validação básica
@@ -139,7 +140,7 @@ export async function POST(req: NextRequest) {
         videoUrl: videoUrl || null,
         attachment: attachment || null,
         moduleId,
-        isPublished: true, // SEMPRE TRUE para teste
+        isPublished: true, // FORÇADO PARA TRUE - TESTE
         createdAt: nowIso,
         updatedAt: nowIso
       })
