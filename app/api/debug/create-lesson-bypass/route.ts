@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     // Buscar dados do curso separadamente
     const { data: course, error: courseErr } = await supabaseAdmin
       .from('Course')
-      .select('id, instructorId')
+      .select('id, instructorId, title')
       .eq('id', module.courseId)
       .single()
 
